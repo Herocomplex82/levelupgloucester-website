@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Level Up Gloucester logo">
+  <title>Level Up Gloucester</title>
+
+  <!-- Outer filled circle — navy background -->
+  <circle cx="150" cy="150" r="145" fill="#1B3A6B"/>
+
+  <!-- Gold outer ring -->
+  <circle cx="150" cy="150" r="145" fill="none" stroke="#F5C518" stroke-width="6"/>
+
+  <!-- Gold inner accent ring -->
+  <circle cx="150" cy="150" r="132" fill="none" stroke="#F5C518" stroke-width="1.5" opacity="0.45"/>
+
+  <!-- Upward arrow — the Level Up mark -->
+  <!-- Arrow head (triangle pointing up) -->
+  <polygon points="150,55 215,138 183,138 183,210 117,210 117,138 85,138" fill="#F5C518"/>
+
+  <!-- Small five-pointed stars flanking the arrow -->
+  <!-- Left star -->
+  <polygon points="68,148 71,139 74,148 83,148 76,154 79,163 71,157 64,163 67,154 60,148"
+           fill="#F5C518" opacity="0.75"/>
+  <!-- Right star -->
+  <polygon points="232,148 235,139 238,148 247,148 240,154 243,163 235,157 228,163 231,154 224,148"
+           fill="#F5C518" opacity="0.75"/>
+
+  <!-- Thin horizontal rule above text -->
+  <line x1="72" y1="232" x2="228" y2="232" stroke="#F5C518" stroke-width="1" opacity="0.5"/>
+
+  <!-- LEVEL UP — primary wordmark -->
+  <text
+    x="150" y="260"
+    text-anchor="middle"
+    font-family="'Arial Black', 'Impact', 'Haettenschweiler', sans-serif"
+    font-size="30"
+    font-weight="900"
+    fill="#FFFFFF"
+    letter-spacing="3">LEVEL UP</text>
+
+  <!-- GLOUCESTER — subtitle -->
+  <text
+    x="150" y="280"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="11"
+    font-weight="700"
+    fill="#F5C518"
+    letter-spacing="5">GLOUCESTER</text>
+</svg>

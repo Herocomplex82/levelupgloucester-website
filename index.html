@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Up Gloucester | Youth Tabletop Gaming Program</title>
+    <meta name="description" content="Level Up Gloucester is a youth program in Gloucester, MA, using tabletop gaming to teach life skills like collaboration and sportsmanship.">
+
+    <!-- Google Fonts: Lato -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* CSS Custom Properties */
+        :root {
+            --color-white: #ffffff;
+            --color-blue: #226e93;
+            --color-gray: #8c8c8c;
+            --color-dark: #212121;
+
+            --color-bg-light: #fafafa;
+
+            --font-family: 'Lato', sans-serif;
+            --header-height: 80px;
+            --spacing-section: 6rem;
+            --container-width: 1200px;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: var(--header-height);
+        }
+
+        body {
+            font-family: var(--font-family);
+            color: var(--color-dark);
+            background-color: var(--color-white);
+            line-height: 1.6;
+            padding-top: var(--header-height);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s ease;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            line-height: 1.2;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--color-dark);
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            position: relative;
+            padding-bottom: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 60px;
+            height: 4px;
+            background-color: var(--color-blue);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            font-size: 1.125rem;
+            margin-bottom: 1.5rem;
+            color: var(--color-dark);
+            opacity: 0.9;
+        }
+
+        /* Layout & Containers */
+        .container {
+            width: 100%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            padding: var(--spacing-section) 0;
+            position: relative;
+        }
+
+        .bg-light {
+            background-color: var(--color-bg-light);
+            border-top: 1px solid rgba(140, 140, 140, 0.1);
+            border-bottom: 1px solid rgba(140, 140, 140, 0.1);
+        }
+
+        /* Header & Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background-color: rgba(255, 255, 255, 0.98);
+            border-bottom: 1px solid rgba(140, 140, 140, 0.2);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--color-blue);
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        nav a {
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -4px;
+            width: 100%;
+            height: 2px;
+            background-color: var(--color-blue);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+
+        nav a:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        /* Buttons & CTAs */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background-color: var(--color-blue);
+            color: var(--color-white);
+            border: 2px solid var(--color-blue);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: transparent;
+            color: var(--color-blue);
+        }
+
+        .btn-placeholder {
+            border: 2px dashed var(--color-blue);
+            background-color: transparent;
+            color: var(--color-blue);
+        }
+
+        .btn-placeholder:hover {
+            background-color: rgba(34, 110, 147, 0.05);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: calc(100vh - var(--header-height));
+            display: flex;
+            align-items: center;
+            padding-top: 4rem;
+            padding-bottom: 4rem;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            background-color: var(--color-bg-light);
+        }
+
+        .hero-image-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--color-gray);
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .hero-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* About Section */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 5fr 7fr;
+            gap: 6rem;
+            align-items: center;
+        }
+
+        .about-text .lead {
+            font-size: 1.35rem;
+            font-weight: 300;
+            color: var(--color-blue);
+            margin-bottom: 2rem;
+        }
+
+        /* Values Grid */
+        .values-container {
+            margin-top: 4rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            border-top: 1px solid rgba(140, 140, 140, 0.2);
+            padding-top: 3rem;
+        }
+
+        .value-item {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .value-icon {
+            width: 40px;
+            height: 4px;
+            background-color: var(--color-gray);
+            transition: background-color 0.3s ease;
+        }
+
+        .value-item:hover .value-icon {
+            background-color: var(--color-blue);
+        }
+
+        .value-title {
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 1rem;
+        }
+
+        /* Programs Section */
+        .programs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .program-card {
+            background-color: var(--color-white);
+            padding: 3rem;
+            border: 1px solid rgba(140, 140, 140, 0.2);
+            position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .program-card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: calc(100% + 2px);
+            height: 4px;
+            background-color: var(--color-blue);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .program-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(33, 33, 33, 0.05);
+        }
+
+        .program-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .program-card h3 {
+            color: var(--color-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .program-card p {
+            margin-bottom: 0;
+            font-size: 1rem;
+            flex-grow: 1;
+        }
+
+        /* Visual Break Section */
+        .visual-break {
+            height: 50vh;
+            min-height: 400px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .visual-break::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(34, 110, 147, 0.8) 0%, rgba(33, 33, 33, 0.6) 100%);
+            z-index: 1;
+        }
+
+        .visual-break-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: var(--color-white);
+            max-width: 800px;
+        }
+
+        .visual-break-content h2 {
+            color: var(--color-white);
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .visual-break-content h2::after {
+            display: none;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--color-dark);
+            color: var(--color-white);
+            padding: 5rem 0 3rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .footer-col h4 {
+            color: var(--color-white);
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 30px;
+            height: 2px;
+            background-color: var(--color-gray);
+        }
+
+        .footer-col p, .footer-col a {
+            color: var(--color-gray);
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .footer-col a:hover {
+            color: var(--color-white);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            font-size: 1.5rem;
+            color: var(--color-gray);
+        }
+
+        .social-links a:hover {
+            color: var(--color-blue);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(140, 140, 140, 0.2);
+            padding-top: 2rem;
+            text-align: center;
+            color: var(--color-gray);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero-grid, .about-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .hero-image-wrapper {
+                height: 400px;
+                order: -1;
+            }
+
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --spacing-section: 4rem;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .programs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container header-inner">
+            <a href="#" class="logo"><img src="images/logo.svg" alt="Level Up Gloucester" style="height:56px;width:auto;display:block;"></a>
+            <nav>
+                <a href="#about">About</a>
+                <a href="#programs">Programs</a>
+                <a href="#impact">Our Impact</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container hero-grid">
+                <div class="hero-content">
+                    <h1>Building leaders and community, one game at a time.</h1>
+                    <p>Level Up Gloucester uses tabletop gaming, including board games and Dungeons &amp; Dragons, to teach essential life skills to children ages 6-13 through facilitated play.</p>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLScKfRAa_QFz-K2G2uv0e8wS0QV7NIQqfm3ojlgw7KevilEE0g/viewform" class="btn" target="_blank" rel="noopener noreferrer">Register for August 21 or 28 &rarr;</a>
+                </div>
+                <div class="hero-image-wrapper">
+                    <img src="images/hero.png" alt="Children laughing and playing a board game together in a bright room">
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="bg-light">
+            <div class="container">
+                <div class="about-grid">
+                    <div class="about-image">
+                        <img src="images/about.png" alt="Diverse children playing a tabletop role-playing game">
+                    </div>
+                    <div class="about-text">
+                        <h2>Mission Driven Play</h2>
+                        <p class="lead">Level Up Gloucester is a mission-driven community program that positions gaming not just as entertainment, but as a primary vehicle for teaching essential social and cognitive skills to the next generation.</p>
+                        <p>We believe in the power of facilitated play. Through structured tabletop gaming and community events, we provide an accessible, educational environment where children develop soft skills, leadership, communication, and conflict resolution in real-time.</p>
+                        <p>Starting October 2026, we're partnering with the <strong>Cape Ann YMCA</strong> to bring this programming into their after-school program.</p>
+
+                        <div class="values-container">
+                            <div class="value-item">
+                                <div class="value-icon"></div>
+                                <span class="value-title">Collaboration</span>
+                            </div>
+                            <div class="value-item">
+                                <div class="value-icon"></div>
+                                <span class="value-title">Sportsmanship</span>
+                            </div>
+                            <div class="value-item">
+                                <div class="value-icon"></div>
+                                <span class="value-title">Creative Thinking</span>
+                            </div>
+                            <div class="value-item">
+                                <div class="value-icon"></div>
+                                <span class="value-title">Community</span>
+                            </div>
+                            <div class="value-item">
+                                <div class="value-icon"></div>
+                                <span class="value-title">Friendship</span>
+                            </div>
+                            <div class="value-item">
+                                <div class="value-icon"></div>
+                                <span class="value-title">Inclusion</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Visual Break with Provided Image as Background -->
+        <section id="impact" class="visual-break" style="background-image: url('images/impact.png'); background-size: cover; background-position: center; background-attachment: fixed;">
+            <div class="container visual-break-content">
+                <h2>Fostering Group Development &amp; Inclusion</h2>
+            </div>
+        </section>
+
+        <!-- Programs Section -->
+        <section id="programs">
+            <div class="container">
+                <h2>Our Programs</h2>
+                <div class="programs-grid">
+
+                    <div class="program-card">
+                        <h3>Summer Pilot Program</h3>
+                        <p>Two trial Fridays &mdash; <strong>August 21 &amp; 28, 9am&ndash;3pm</strong> at Lanesville Community Center. Board games, card games, and guided Dungeons &amp; Dragons adventures for kids ages 6-13. <strong>$65/child</strong>, sliding scale available &mdash; no child turned away.</p>
+                    </div>
+
+                    <div class="program-card">
+                        <h3>After-school Programming</h3>
+                        <p>Ongoing youth gaming sessions held after school hours that focus on developing life skills through structured tabletop play.</p>
+                    </div>
+
+                    <div class="program-card">
+                        <h3>School Partnerships</h3>
+                        <p>Collaborative programs that bring tabletop gaming curriculum and life-skills development directly to local schools and organizations.</p>
+                    </div>
+
+                    <div class="program-card">
+                        <h3>Private D&amp;D &amp; Family Game Nights</h3>
+                        <p>Facilitated, private tabletop game sessions tailored for families, birthday groups, or small circles of friends at their preferred location.</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Image Accent -->
+        <section style="padding: 0;">
+            <div style="width: 100%; height: 300px; background-image: url('images/accent.png'); background-size: cover; background-position: center;"></div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-grid">
+
+                <div class="footer-col">
+                    <h4>Level Up Gloucester</h4>
+                    <p>A 501(c)3 Non-Profit Youth Development Organization.</p>
+                    <p>Building leaders and community, one game at a time.</p>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Contact Us</h4>
+                    <a href="mailto:Levelupgloucester@gmail.com">Levelupgloucester@gmail.com</a>
+                    <a href="tel:978-309-9001">978-309-9001</a>
+                    <a href="https://www.levelupgloucester.org/" target="_blank" rel="noopener noreferrer">www.levelupgloucester.org</a>
+                    <p style="margin-top: 1rem;">
+                        53 Wheeler St<br>
+                        Gloucester, MA, 01930<br>
+                        USA
+                    </p>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Connect</h4>
+                    <p>Follow our journey and join the community.</p>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/LevelupGloucester" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; Level Up Gloucester. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

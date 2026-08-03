@@ -279,6 +279,46 @@
             margin-bottom: 2rem;
         }
 
+        /* Founder Section */
+        .founder-grid {
+            grid-template-columns: 7fr 5fr;
+        }
+
+        .founder-photo-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            background-color: var(--color-bg-light);
+            border: 2px solid rgba(140, 140, 140, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .founder-photo-wrapper img {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .founder-photo-wrapper i {
+            font-size: 3.5rem;
+            color: var(--color-gray);
+            opacity: 0.5;
+        }
+
+        .founder-photo-wrapper span {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-gray);
+        }
+
         /* Values Grid */
         .values-container {
             margin-top: 4rem;
@@ -470,7 +510,7 @@
 
         /* Responsive Design */
         @media (max-width: 992px) {
-            .hero-grid, .about-grid {
+            .hero-grid, .about-grid, .founder-grid {
                 grid-template-columns: 1fr;
                 gap: 3rem;
             }
@@ -517,6 +557,7 @@
             <a href="#" class="logo"><img src="images/logo.png" alt="Level Up Gloucester" style="height:100px;width:auto;display:block;"></a>
             <nav>
                 <a href="#about">About</a>
+                <a href="#founder">Founder</a>
                 <a href="#programs">Programs</a>
                 <a href="#impact">Our Impact</a>
                 <a href="#contact">Contact</a>
@@ -578,6 +619,23 @@
                                 <span class="value-title">Inclusion</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Founder Section -->
+        <section id="founder">
+            <div class="container">
+                <div class="about-grid founder-grid">
+                    <div class="about-text">
+                        <h2>Meet Our Founder</h2>
+                        <p class="lead">Steve Rossi &mdash; Founder &amp; Executive Director</p>
+                        <p>[Add Steve's bio here &mdash; his background, what led him to start Level Up Gloucester, and his connection to tabletop gaming and the Gloucester community.]</p>
+                    </div>
+                    <div class="founder-photo-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Photo Coming Soon</span>
                     </div>
                 </div>
             </div>

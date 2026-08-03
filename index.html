@@ -280,43 +280,22 @@
         }
 
         /* Founder Section */
-        .founder-grid {
-            grid-template-columns: 7fr 5fr;
+        .founder-text {
+            max-width: 760px;
+            margin-bottom: 3rem;
         }
 
-        .founder-photo-wrapper {
-            position: relative;
+        .founder-photos {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 2rem;
+        }
+
+        .founder-photos img {
             width: 100%;
-            aspect-ratio: 4 / 5;
-            background-color: var(--color-bg-light);
+            height: 460px;
+            object-fit: cover;
             border: 2px solid rgba(140, 140, 140, 0.2);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        .founder-photo-wrapper img {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        .founder-photo-wrapper i {
-            font-size: 3.5rem;
-            color: var(--color-gray);
-            opacity: 0.5;
-        }
-
-        .founder-photo-wrapper span {
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--color-gray);
         }
 
         /* Values Grid */
@@ -510,9 +489,17 @@
 
         /* Responsive Design */
         @media (max-width: 992px) {
-            .hero-grid, .about-grid, .founder-grid {
+            .hero-grid, .about-grid {
                 grid-template-columns: 1fr;
                 gap: 3rem;
+            }
+
+            .founder-photos {
+                grid-template-columns: 1fr;
+            }
+
+            .founder-photos img {
+                height: 320px;
             }
 
             .hero-image-wrapper {
@@ -627,16 +614,15 @@
         <!-- Founder Section -->
         <section id="founder">
             <div class="container">
-                <div class="about-grid founder-grid">
-                    <div class="about-text">
-                        <h2>Meet Our Founder</h2>
-                        <p class="lead">Higher education leadership educator, dad of two, and Dungeon Master of 25 years.</p>
-                        <p>Steve Rossi has spent his career in higher education as a leadership and social justice educator, building programs and large-scale events that help young people find their voice and their community. He brings that same experience to Level Up Gloucester &mdash; decades of watching students grow into confident, engaged leaders, now aimed at kids just starting that journey.</p>
-                        <p>A father of two and a Dungeon Master for 25 years, Steve has run more campaigns around the kitchen table than he can count, and he's seen firsthand what a well-run game can teach: how to listen, how to problem-solve under pressure, and how to root for the person next to you. Level Up Gloucester grew out of that belief &mdash; that play, done with intention, is one of the most powerful tools we have for building leaders and community.</p>
-                    </div>
-                    <div class="founder-photo-wrapper">
-                        <img src="images/founder-steve.jpg" alt="Steve Rossi, Founder and Executive Director of Level Up Gloucester">
-                    </div>
+                <h2>Meet Our Founder</h2>
+                <div class="founder-text">
+                    <p class="lead">Higher education leadership educator, dad of two, and Dungeon Master of 25 years.</p>
+                    <p>Steve Rossi has spent his career in higher education as a leadership and social justice educator, building programs and large-scale events that help young people find their voice and their community. He brings that same experience to Level Up Gloucester &mdash; decades of watching students grow into confident, engaged leaders, now aimed at kids just starting that journey.</p>
+                    <p>A father of two and a Dungeon Master for 25 years, Steve has run more campaigns around the kitchen table than he can count, and he's seen firsthand what a well-run game can teach: how to listen, how to problem-solve under pressure, and how to root for the person next to you. Level Up Gloucester grew out of that belief &mdash; that play, done with intention, is one of the most powerful tools we have for building leaders and community.</p>
+                </div>
+                <div class="founder-photos">
+                    <img src="images/founder-workshop.jpg" alt="Steve Rossi facilitating a tabletop gaming workshop with a group of laughing children">
+                    <img src="images/founder-steve.jpg" alt="Steve Rossi, Founder and Executive Director of Level Up Gloucester">
                 </div>
             </div>
         </section>

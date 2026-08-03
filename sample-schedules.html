@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Schedules | Level Up Gloucester</title>
+    <meta name="description" content="See sample schedules for a Level Up Gloucester pilot day, private D&D one-shot, birthday party, and family game night.">
+
+    <!-- Google Fonts: Lato -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* CSS Custom Properties */
+        :root {
+            --color-white: #ffffff;
+            --color-blue: #226e93;
+            --color-gray: #8c8c8c;
+            --color-dark: #212121;
+
+            --color-bg-light: #fafafa;
+
+            --font-family: 'Lato', sans-serif;
+            --header-height: 120px;
+            --spacing-section: 6rem;
+            --container-width: 1200px;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: var(--header-height);
+        }
+
+        body {
+            font-family: var(--font-family);
+            color: var(--color-dark);
+            background-color: var(--color-white);
+            line-height: 1.6;
+            padding-top: var(--header-height);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s ease;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            line-height: 1.2;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--color-dark);
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+            position: relative;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 60px;
+            height: 4px;
+            background-color: var(--color-blue);
+        }
+
+        p {
+            font-size: 1.125rem;
+            margin-bottom: 1.5rem;
+            color: var(--color-dark);
+            opacity: 0.9;
+        }
+
+        /* Layout & Containers */
+        .container {
+            width: 100%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            padding: var(--spacing-section) 0;
+            position: relative;
+        }
+
+        .bg-light {
+            background-color: var(--color-bg-light);
+            border-top: 1px solid rgba(140, 140, 140, 0.1);
+            border-bottom: 1px solid rgba(140, 140, 140, 0.1);
+        }
+
+        /* Header & Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background-color: rgba(255, 255, 255, 0.98);
+            border-bottom: 1px solid rgba(140, 140, 140, 0.2);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--color-blue);
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        nav a {
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -4px;
+            width: 100%;
+            height: 2px;
+            background-color: var(--color-blue);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+
+        nav a:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        /* Buttons & CTAs */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background-color: var(--color-blue);
+            color: var(--color-white);
+            border: 2px solid var(--color-blue);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: transparent;
+            color: var(--color-blue);
+        }
+
+        /* Page Intro */
+        .page-hero {
+            padding-top: 4rem;
+            padding-bottom: 2rem;
+        }
+
+        .page-hero p {
+            max-width: 760px;
+            font-size: 1.25rem;
+        }
+
+        /* Schedule Blocks */
+        .schedule-block {
+            margin-bottom: var(--spacing-section);
+        }
+
+        .schedule-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .schedule-meta {
+            color: var(--color-blue);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .schedule-list {
+            list-style: none;
+            border-top: 1px solid rgba(140, 140, 140, 0.2);
+        }
+
+        .schedule-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 2rem;
+            padding: 1.1rem 0;
+            border-bottom: 1px solid rgba(140, 140, 140, 0.2);
+        }
+
+        .schedule-time {
+            font-weight: 900;
+            color: var(--color-blue);
+            white-space: nowrap;
+        }
+
+        .schedule-note {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: var(--color-bg-light);
+            border-left: 4px solid var(--color-blue);
+            font-size: 1rem;
+            opacity: 0.85;
+        }
+
+        .schedule-note p {
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        .disclaimer {
+            font-size: 0.95rem;
+            opacity: 0.7;
+            max-width: 760px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--color-dark);
+            color: var(--color-white);
+            padding: 5rem 0 3rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .footer-col h4 {
+            color: var(--color-white);
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 30px;
+            height: 2px;
+            background-color: var(--color-gray);
+        }
+
+        .footer-col p, .footer-col a {
+            color: var(--color-gray);
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .footer-col a:hover {
+            color: var(--color-white);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            font-size: 1.5rem;
+            color: var(--color-gray);
+        }
+
+        .social-links a:hover {
+            color: var(--color-blue);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(140, 140, 140, 0.2);
+            padding-top: 2rem;
+            text-align: center;
+            color: var(--color-gray);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            :root {
+                --spacing-section: 4rem;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .schedule-row {
+                grid-template-columns: 100px 1fr;
+                gap: 1rem;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container header-inner">
+            <a href="index.html" class="logo"><img src="images/logo.png" alt="Level Up Gloucester" style="height:100px;width:auto;display:block;"></a>
+            <nav>
+                <a href="index.html#about">About</a>
+                <a href="index.html#founder">Founder</a>
+                <a href="index.html#programs">Programs</a>
+                <a href="index.html#impact">Our Impact</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Page Intro -->
+        <section class="page-hero">
+            <div class="container">
+                <h1>Sample Schedules</h1>
+                <p>Wondering what an actual session looks like? Here are the default timelines we use for the summer pilot days, a private D&amp;D one-shot, a birthday party, and a family game night. Every booking flexes a bit based on age range, group size, and what your family wants &mdash; email us and we'll build a plan around it.</p>
+            </div>
+        </section>
+
+        <!-- Schedules -->
+        <section class="bg-light">
+            <div class="container">
+
+                <div class="schedule-block" id="pilot-day">
+                    <span class="schedule-meta">Summer Pilot Program &middot; Aug 21 &amp; 28, 2026</span>
+                    <h2>A Pilot Day</h2>
+                    <p>Full day at Lanesville Community Center, ages 6&ndash;13, running alongside our Junior Facilitators.</p>
+                    <ul class="schedule-list">
+                        <li class="schedule-row"><span class="schedule-time">10:00am</span><span>Welcome, check-in, name tags</span></li>
+                        <li class="schedule-row"><span class="schedule-time">10:15am</span><span>Track introductions and first activity</span></li>
+                        <li class="schedule-row"><span class="schedule-time">12:00pm</span><span>Pizza lunch, free social time</span></li>
+                        <li class="schedule-row"><span class="schedule-time">12:45pm</span><span>Second game / adventure continues</span></li>
+                        <li class="schedule-row"><span class="schedule-time">2:30pm</span><span>Reflection circle</span></li>
+                        <li class="schedule-row"><span class="schedule-time">3:00pm</span><span>Pickup</span></li>
+                    </ul>
+                    <div class="schedule-note">
+                        <p>Please plan to pick up promptly at 3:00pm. If you'll be late, just let us know in advance.</p>
+                    </div>
+                </div>
+
+                <div class="schedule-block" id="private-dnd">
+                    <span class="schedule-meta">Private D&amp;D One-Shot &middot; ~2.5 hours</span>
+                    <h2>A Private D&amp;D Session</h2>
+                    <p>Booked at your preferred location, with pre-generated characters &mdash; no prior D&amp;D experience needed.</p>
+                    <ul class="schedule-list">
+                        <li class="schedule-row"><span class="schedule-time">0:00</span><span>Arrival, character selection</span></li>
+                        <li class="schedule-row"><span class="schedule-time">0:10</span><span>Intro: what's a one-shot, how the dice work</span></li>
+                        <li class="schedule-row"><span class="schedule-time">0:20</span><span>DM-guided adventure begins</span></li>
+                        <li class="schedule-row"><span class="schedule-time">2:00</span><span>Snack / break</span></li>
+                        <li class="schedule-row"><span class="schedule-time">2:15</span><span>Adventure wraps up, quick reflection on favorite moments</span></li>
+                    </ul>
+                </div>
+
+                <div class="schedule-block" id="birthday-party">
+                    <span class="schedule-meta">Birthday Party &middot; ~2 hours</span>
+                    <h2>A Birthday Party</h2>
+                    <p>Gaming plus the party essentials &mdash; the birthday kid picks the games and goes first in the welcome circle.</p>
+                    <ul class="schedule-list">
+                        <li class="schedule-row"><span class="schedule-time">0:00</span><span>Arrival, welcome circle, quick how-to-play for guests who don't all know each other</span></li>
+                        <li class="schedule-row"><span class="schedule-time">0:10</span><span>Game 1 &mdash; a collaborative icebreaker game</span></li>
+                        <li class="schedule-row"><span class="schedule-time">0:55</span><span>Cake / presents break</span></li>
+                        <li class="schedule-row"><span class="schedule-time">1:15</span><span>Game 2 &mdash; birthday kid's choice</span></li>
+                        <li class="schedule-row"><span class="schedule-time">1:50</span><span>Closing circle &mdash; shout-outs for the birthday kid's guests</span></li>
+                    </ul>
+                </div>
+
+                <div class="schedule-block" id="family-game-night">
+                    <span class="schedule-meta">Family Game Night &middot; ~2 hours</span>
+                    <h2>A Family Game Night</h2>
+                    <p>Multi-generational play &mdash; parents and grandparents at the table as players, not just spectators.</p>
+                    <ul class="schedule-list">
+                        <li class="schedule-row"><span class="schedule-time">0:00</span><span>Arrival, casual mingling</span></li>
+                        <li class="schedule-row"><span class="schedule-time">0:15</span><span>Game 1 &mdash; easy for mixed ages</span></li>
+                        <li class="schedule-row"><span class="schedule-time">1:00</span><span>Break &mdash; snacks, swap tables/groups</span></li>
+                        <li class="schedule-row"><span class="schedule-time">1:15</span><span>Game 2 &mdash; a slightly more strategic option for families who want a challenge</span></li>
+                        <li class="schedule-row"><span class="schedule-time">1:55</span><span>Closing &mdash; a quick round of favorite moments</span></li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Contact CTA -->
+        <section>
+            <div class="container">
+                <h2>Want to Book Your Own?</h2>
+                <p class="disclaimer">These are our defaults, not a fixed menu &mdash; every private booking gets built around your group's age range and what you're hoping to get out of it.</p>
+                <a href="mailto:Levelupgloucester@gmail.com" class="btn">Email to Book</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-grid">
+
+                <div class="footer-col">
+                    <h4>Level Up Gloucester</h4>
+                    <p>A 501(c)3 Non-Profit Youth Development Organization.</p>
+                    <p>Building leaders and community, one game at a time.</p>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Contact Us</h4>
+                    <a href="mailto:Levelupgloucester@gmail.com">Levelupgloucester@gmail.com</a>
+                    <a href="tel:978-309-9001">978-309-9001</a>
+                    <a href="https://www.levelupgloucester.org/" target="_blank" rel="noopener noreferrer">www.levelupgloucester.org</a>
+                    <p style="margin-top: 1rem;">
+                        53 Wheeler St<br>
+                        Gloucester, MA, 01930<br>
+                        USA
+                    </p>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Connect</h4>
+                    <p>Follow our journey and join the community.</p>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/LevelupGloucester" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; Level Up Gloucester. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

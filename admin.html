@@ -20,6 +20,8 @@
             </div>
 
             <div id="dashboard" hidden>
+                <p id="dashboard-error" class="form-error" hidden></p>
+
                 <h2>Raffle Entries <a href="/api/admin/entries?type=raffle&format=csv" download>Download CSV</a></h2>
                 <div id="raffle-table"></div>
 
@@ -90,14 +92,43 @@
             container.replaceChildren(table);
         }
 
+        function showLoginPanel() {
+            document.getElementById("dashboard").hidden = true;
+            document.getElementById("login-panel").hidden = false;
+        }
+
+        function showDashboardError(message) {
+            const errorBox = document.getElementById("dashboard-error");
+            errorBox.textContent = message;
+            errorBox.hidden = false;
+        }
+
+        async function readErrorMessage(response, fallback) {
+            try {
+                const result = await response.json();
+                return result.error || fallback;
+            } catch {
+                return fallback;
+            }
+        }
+
         async function loadDashboard() {
+            document.getElementById("dashboard-error").hidden = true;
             for (const [type, containerId] of [
                 ["raffle", "raffle-table"],
                 ["registrations", "registrations-table"],
                 ["donations", "donations-table"],
             ]) {
                 const response = await fetch(`/api/admin/entries?type=${type}`);
-                if (response.ok) renderTable(containerId, await response.json());
+                if (response.ok) {
+                    renderTable(containerId, await response.json());
+                    continue;
+                }
+                if (response.status === 401) {
+                    showLoginPanel();
+                    return;
+                }
+                showDashboardError(await readErrorMessage(response, `Failed to load ${type}.`));
             }
         }
 
@@ -120,7 +151,8 @@
 
         document.getElementById("basket-form").addEventListener("submit", async (e) => {
             e.preventDefault();
-            await fetch("/api/admin/manage", {
+            document.getElementById("dashboard-error").hidden = true;
+            const response = await fetch("/api/admin/manage", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -130,13 +162,22 @@
                     image_path: document.getElementById("b-image").value,
                 }),
             });
+            if (!response.ok) {
+                if (response.status === 401) {
+                    showLoginPanel();
+                    return;
+                }
+                showDashboardError(await readErrorMessage(response, "Failed to add basket."));
+                return;
+            }
             e.target.reset();
             alert("Basket added.");
         });
 
         document.getElementById("workshop-form").addEventListener("submit", async (e) => {
             e.preventDefault();
-            await fetch("/api/admin/manage", {
+            document.getElementById("dashboard-error").hidden = true;
+            const response = await fetch("/api/admin/manage", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -149,6 +190,14 @@
                     capacity: Number(document.getElementById("w-capacity").value),
                 }),
             });
+            if (!response.ok) {
+                if (response.status === 401) {
+                    showLoginPanel();
+                    return;
+                }
+                showDashboardError(await readErrorMessage(response, "Failed to add workshop day."));
+                return;
+            }
             e.target.reset();
             loadDashboard();
             alert("Workshop day added.");

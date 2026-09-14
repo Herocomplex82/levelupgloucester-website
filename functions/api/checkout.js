@@ -5,6 +5,7 @@ import {
   getBasketById,
   getWorkshopDayById,
   reserveSeat,
+  releaseSeat,
   insertPendingRegistration,
 } from "../../lib/db.js";
 
@@ -81,6 +82,9 @@ async function handleRegistration(body, env, origin) {
   if (body.waiverAccepted !== true) {
     return Response.json({ error: "Waiver must be accepted" }, { status: 400 });
   }
+  if (!["full", "half"].includes(body.registrationType)) {
+    return Response.json({ error: "Invalid registrationType" }, { status: 400 });
+  }
 
   const day = await getWorkshopDayById(env.DB, body.workshopDayId);
   if (!day) {
@@ -94,50 +98,55 @@ async function handleRegistration(body, env, origin) {
 
   const priceCents = body.registrationType === "half" ? day.price_half_cents : day.price_full_cents;
 
-  const { id: registrationId } = await insertPendingRegistration(env.DB, {
-    workshopDayId: body.workshopDayId,
-    childName: body.childName,
-    childDob: body.childDob,
-    parentName: body.parentName,
-    address: body.address,
-    phone: body.phone,
-    email: body.email,
-    emergencyContactName: body.emergencyContactName,
-    emergencyContactPhone: body.emergencyContactPhone,
-    allergiesMedical: body.allergiesMedical,
-    waiverAccepted: body.waiverAccepted,
-    waiverSignatureName: body.waiverSignatureName,
-    waiverTimestamp: new Date().toISOString(),
-    photoRelease: body.photoRelease === true,
-    registrationType: body.registrationType,
-    promoCodeUsed: null,
-  });
+  try {
+    const { id: registrationId } = await insertPendingRegistration(env.DB, {
+      workshopDayId: body.workshopDayId,
+      childName: body.childName,
+      childDob: body.childDob,
+      parentName: body.parentName,
+      address: body.address,
+      phone: body.phone,
+      email: body.email,
+      emergencyContactName: body.emergencyContactName,
+      emergencyContactPhone: body.emergencyContactPhone,
+      allergiesMedical: body.allergiesMedical,
+      waiverAccepted: body.waiverAccepted,
+      waiverSignatureName: body.waiverSignatureName,
+      waiverTimestamp: new Date().toISOString(),
+      photoRelease: body.photoRelease === true,
+      registrationType: body.registrationType,
+      promoCodeUsed: null,
+    });
 
-  const stripe = getStripeClient(env);
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: body.email,
-    allow_promotion_codes: true,
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          product_data: { name: `${day.title} — ${body.registrationType === "half" ? "Half day" : "Full day"}` },
-          unit_amount: priceCents,
+    const stripe = getStripeClient(env);
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: body.email,
+      allow_promotion_codes: true,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: { name: `${day.title} — ${body.registrationType === "half" ? "Half day" : "Full day"}` },
+            unit_amount: priceCents,
+          },
+          quantity: 1,
         },
-        quantity: 1,
+      ],
+      metadata: {
+        type: "registration",
+        registrationId: String(registrationId),
+        workshopDayId: String(body.workshopDayId),
       },
-    ],
-    metadata: {
-      type: "registration",
-      registrationId: String(registrationId),
-      workshopDayId: String(body.workshopDayId),
-    },
-    success_url: `${origin}/register-success.html?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/register.html`,
-  });
+      success_url: `${origin}/register-success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/register.html`,
+    });
 
-  return Response.json({ url: session.url });
+    return Response.json({ url: session.url });
+  } catch {
+    await releaseSeat(env.DB, body.workshopDayId);
+    return Response.json({ error: "Something went wrong, please try again" }, { status: 500 });
+  }
 }
 
 async function handleDonation(body, env, origin) {
@@ -191,14 +200,18 @@ export async function onRequestPost({ request, env }) {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  switch (body.type) {
-    case "raffle":
-      return handleRaffle(body, env, origin);
-    case "registration":
-      return handleRegistration(body, env, origin);
-    case "donation":
-      return handleDonation(body, env, origin);
-    default:
-      return Response.json({ error: "Unknown type" }, { status: 400 });
+  try {
+    switch (body.type) {
+      case "raffle":
+        return await handleRaffle(body, env, origin);
+      case "registration":
+        return await handleRegistration(body, env, origin);
+      case "donation":
+        return await handleDonation(body, env, origin);
+      default:
+        return Response.json({ error: "Unknown type" }, { status: 400 });
+    }
+  } catch {
+    return Response.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

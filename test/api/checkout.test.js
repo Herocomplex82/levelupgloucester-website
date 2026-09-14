@@ -159,6 +159,93 @@ describe("POST /api/checkout — registration", () => {
     expect(response.status).toBe(409);
   });
 
+  it("400s on an invalid registrationType and does not reserve a seat", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "Bad Registration Type Workshop",
+      eventDate: "2027-04-23",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 5,
+    });
+    const stripe = fakeStripe();
+    vi.spyOn(stripeLib, "getStripeClient").mockReturnValue(stripe);
+
+    const response = await onRequestPost({
+      env,
+      request: postJson({
+        type: "registration",
+        workshopDayId,
+        registrationType: "partial",
+        childName: "Alex Rossi",
+        childDob: "2018-05-01",
+        parentName: "Steve Rossi",
+        address: "1 Main St, Gloucester, MA",
+        phone: "978-555-0100",
+        email: "parent@example.com",
+        emergencyContactName: "Jackie Rossi",
+        emergencyContactPhone: "978-555-0101",
+        waiverAccepted: true,
+        waiverSignatureName: "Steve Rossi",
+        photoRelease: false,
+      }),
+    });
+
+    expect(response.status).toBe(400);
+    expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
+
+    const day = await getWorkshopDayById(env.DB, workshopDayId);
+    expect(day.seats_taken).toBe(0);
+  });
+
+  it("releases the seat and returns a clean 500 when Stripe fails after the seat is reserved", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "Stripe Failure Workshop",
+      eventDate: "2027-04-24",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 1,
+    });
+    const stripe = {
+      checkout: {
+        sessions: {
+          create: vi.fn().mockRejectedValue(new Error("stripe_secret_key=sk_live_super_secret failure")),
+        },
+      },
+    };
+    vi.spyOn(stripeLib, "getStripeClient").mockReturnValue(stripe);
+
+    const response = await onRequestPost({
+      env,
+      request: postJson({
+        type: "registration",
+        workshopDayId,
+        registrationType: "full",
+        childName: "Alex Rossi",
+        childDob: "2018-05-01",
+        parentName: "Steve Rossi",
+        address: "1 Main St, Gloucester, MA",
+        phone: "978-555-0100",
+        email: "parent@example.com",
+        emergencyContactName: "Jackie Rossi",
+        emergencyContactPhone: "978-555-0101",
+        waiverAccepted: true,
+        waiverSignatureName: "Steve Rossi",
+        photoRelease: false,
+      }),
+    });
+
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body.error).toBe("Something went wrong, please try again");
+    expect(body.error).not.toMatch(/sk_live/);
+    expect(JSON.stringify(body)).not.toMatch(/sk_live/);
+
+    const day = await getWorkshopDayById(env.DB, workshopDayId);
+    expect(day.seats_taken).toBe(0);
+  });
+
   it("400s when the waiver was not accepted", async () => {
     const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
       title: "Waiver Test Workshop",
@@ -192,6 +279,31 @@ describe("POST /api/checkout — registration", () => {
     });
 
     expect(response.status).toBe(400);
+  });
+});
+
+describe("POST /api/checkout — top-level error handling", () => {
+  it("returns a clean 500 (not a raw exception) when a handler throws unexpectedly", async () => {
+    vi.spyOn(stripeLib, "getStripeClient").mockImplementation(() => {
+      throw new Error("unexpected internal failure: env.STRIPE_SECRET_KEY=sk_live_super_secret");
+    });
+
+    const response = await onRequestPost({
+      env,
+      request: postJson({
+        type: "donation",
+        amountCents: 4000,
+        designation: "sponsor_a_child",
+        donorName: "Anonymous",
+        donorEmail: "donor@example.com",
+      }),
+    });
+
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body.error).toBe("Something went wrong. Please try again.");
+    expect(body.error).not.toMatch(/sk_live/);
+    expect(JSON.stringify(body)).not.toMatch(/sk_live/);
   });
 });
 

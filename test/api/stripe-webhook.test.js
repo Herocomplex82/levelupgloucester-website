@@ -1,5 +1,5 @@
 // test/api/stripe-webhook.test.js
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { env } from "cloudflare:test";
 import Stripe from "stripe";
 import { insertBasket, insertWorkshopDay, insertPendingRegistration, getWorkshopDayById, reserveSeat } from "../../lib/db.js";
@@ -211,5 +211,29 @@ describe("POST /api/stripe-webhook", () => {
       .bind("cs_test_redelivered_raffle")
       .all();
     expect(results).toHaveLength(1);
+  });
+
+  it("logs an error when metadata.type is unrecognized on a real completed payment", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const request = await signedWebhookRequest(
+      checkoutCompletedEvent({
+        id: "cs_test_unknown_type",
+        metadata: { type: "mystery-flow" },
+      })
+    );
+
+    const response = await onRequestPost({
+      request,
+      env: { ...env, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET },
+    });
+
+    expect(response.status).toBe(200);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    const loggedMessage = errorSpy.mock.calls[0].join(" ");
+    expect(loggedMessage).toContain("cs_test_unknown_type");
+    expect(loggedMessage).toContain("mystery-flow");
+
+    errorSpy.mockRestore();
   });
 });

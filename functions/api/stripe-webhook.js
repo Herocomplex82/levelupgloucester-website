@@ -58,6 +58,9 @@ export async function onRequestPost({ request, env }) {
       break;
     }
     default:
+      console.error(
+        `stripe-webhook: unrecognized metadata.type "${metadata.type}" for session ${session.id}`
+      );
       return Response.json({ received: true, ignored: "unknown metadata.type" });
   }
 

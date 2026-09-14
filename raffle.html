@@ -29,6 +29,7 @@
             <div class="container">
                 <h1>Holiday Basket Sweepstakes</h1>
                 <p class="lead">Choose a basket, then enter for your chance to win. Entries are $1 each, or 6 for $5. <strong>No purchase is necessary to enter or win</strong> — see "Enter Free" below.</p>
+                <p class="lead"><strong>Drawing: Saturday, December 13, 2026.</strong></p>
             </div>
         </section>
 
@@ -82,10 +83,10 @@
                 <p><strong>Eligibility:</strong> Open to legal residents of Massachusetts 18 years of age or older. Void where prohibited.</p>
                 <p><strong>How to Enter:</strong> Purchase one or more $1 entries (or a 6-for-$5 bundle) at levelupgloucester.org/raffle.html, choosing the basket you wish to enter, OR enter free by mail as described above. Limit one free entry per person/household per basket.</p>
                 <p><strong>Odds of Winning:</strong> Depend on the total number of eligible entries received for each basket.</p>
-                <p><strong>Winner Selection:</strong> One winner per basket will be drawn at random from all eligible entries for that basket on the drawing date announced on this page. Winners will be notified by the email or phone number provided at entry within 30 days of the drawing and must respond within 7 days to claim their prize or it will be forfeited and re-drawn.</p>
+                <p><strong>Winner Selection:</strong> One winner per basket will be drawn at random from all eligible entries for that basket on <strong>Saturday, December 13, 2026</strong>. Winners will be notified by the email or phone number provided at entry within 2 business days of the drawing and must respond within 3 days to claim their prize or it will be forfeited and re-drawn. Winners are responsible for arranging pickup or delivery of their basket before December 24, 2026.</p>
                 <p><strong>Prizes:</strong> Each basket is described on this page along with its approximate retail value. Level Up Inc. reserves the right to substitute a prize of equal or greater value. Prizes are provided as-is with no warranty.</p>
                 <p><strong>Governing Law:</strong> This sweepstakes is governed by the laws of the Commonwealth of Massachusetts.</p>
-                <p><em>This section will be finalized with the actual drawing date before entries open — do not publish live until reviewed.</em></p>
+                <p><em>Drawing date is final. Still pending: each basket's approximate retail value below — do not publish live until reviewed.</em></p>
             </div>
         </section>
     </main>
@@ -119,6 +120,15 @@
                 description.textContent = b.description;
 
                 card.append(img, heading, description);
+
+                if (b.arv_cents != null) {
+                    const arv = document.createElement("p");
+                    const arvStrong = document.createElement("strong");
+                    arvStrong.textContent = `Approximate retail value: $${(b.arv_cents / 100).toFixed(2)}`;
+                    arv.append(arvStrong);
+                    card.append(arv);
+                }
+
                 grid.appendChild(card);
             });
 

@@ -1,7 +1,7 @@
 // functions/api/admin/manage.js
 import { isAuthorized } from "../../../lib/auth.js";
 import { requireFields } from "../../../lib/validate.js";
-import { insertBasket, insertWorkshopDay } from "../../../lib/db.js";
+import { insertBasket, insertWorkshopDay, updateBasketArv } from "../../../lib/db.js";
 
 export async function onRequestPost({ request, env }) {
   if (!isAuthorized(request, env)) {
@@ -20,8 +20,23 @@ export async function onRequestPost({ request, env }) {
     if (missing.length > 0) {
       return Response.json({ error: `Missing fields: ${missing.join(", ")}` }, { status: 400 });
     }
+    if (body.arv_cents != null && (!Number.isInteger(body.arv_cents) || body.arv_cents < 0)) {
+      return Response.json({ error: "arv_cents must be a non-negative integer" }, { status: 400 });
+    }
     const result = await insertBasket(env.DB, body);
     return Response.json(result);
+  }
+
+  if (body.kind === "basket_arv") {
+    const missing = requireFields(body, ["id", "arv_cents"]);
+    if (missing.length > 0) {
+      return Response.json({ error: `Missing fields: ${missing.join(", ")}` }, { status: 400 });
+    }
+    if (!Number.isInteger(body.arv_cents) || body.arv_cents < 0) {
+      return Response.json({ error: "arv_cents must be a non-negative integer" }, { status: 400 });
+    }
+    await updateBasketArv(env.DB, body);
+    return Response.json({ ok: true });
   }
 
   if (body.kind === "workshop_day") {

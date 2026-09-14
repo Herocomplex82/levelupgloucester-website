@@ -31,11 +31,15 @@
                 <h2>Donations <a href="/api/admin/entries?type=donations&format=csv" download>Download CSV</a></h2>
                 <div id="donations-table"></div>
 
+                <h2>Baskets</h2>
+                <div id="baskets-table"></div>
+
                 <h2>Add a Basket</h2>
                 <form id="basket-form">
                     <div class="form-field"><label for="b-name">Name</label><input type="text" id="b-name" required></div>
                     <div class="form-field"><label for="b-desc">Description</label><input type="text" id="b-desc" required></div>
                     <div class="form-field"><label for="b-image">Image path (e.g. images/baskets/catan.jpg — commit the file first)</label><input type="text" id="b-image" required></div>
+                    <div class="form-field"><label for="b-arv">Approximate retail value (USD, optional — fill in once the basket is assembled)</label><input type="number" id="b-arv" min="0" step="0.01"></div>
                     <button type="submit" class="btn">Add Basket</button>
                 </form>
 
@@ -130,6 +134,67 @@
                 }
                 showDashboardError(await readErrorMessage(response, `Failed to load ${type}.`));
             }
+            await loadBaskets();
+        }
+
+        async function loadBaskets() {
+            const response = await fetch("/api/baskets");
+            if (!response.ok) {
+                showDashboardError("Failed to load baskets.");
+                return;
+            }
+            const baskets = await response.json();
+            const container = document.getElementById("baskets-table");
+            container.innerHTML = "";
+            if (baskets.length === 0) {
+                container.textContent = "None yet.";
+                return;
+            }
+            for (const b of baskets) {
+                const row = document.createElement("div");
+                row.style.cssText = "display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid #ccc;";
+
+                const label = document.createElement("span");
+                label.textContent = b.name;
+                label.style.flex = "1";
+
+                const arvInput = document.createElement("input");
+                arvInput.type = "number";
+                arvInput.min = "0";
+                arvInput.step = "0.01";
+                arvInput.style.width = "8rem";
+                arvInput.placeholder = "ARV (USD)";
+                if (b.arv_cents != null) arvInput.value = (b.arv_cents / 100).toFixed(2);
+
+                const saveBtn = document.createElement("button");
+                saveBtn.type = "button";
+                saveBtn.className = "btn";
+                saveBtn.textContent = "Save ARV";
+                saveBtn.addEventListener("click", async () => {
+                    const dollars = parseFloat(arvInput.value);
+                    if (Number.isNaN(dollars) || dollars < 0) {
+                        showDashboardError("Enter a valid ARV amount.");
+                        return;
+                    }
+                    const response = await fetch("/api/admin/manage", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ kind: "basket_arv", id: b.id, arv_cents: Math.round(dollars * 100) }),
+                    });
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            showLoginPanel();
+                            return;
+                        }
+                        showDashboardError(await readErrorMessage(response, "Failed to save ARV."));
+                        return;
+                    }
+                    await loadBaskets();
+                });
+
+                row.append(label, arvInput, saveBtn);
+                container.appendChild(row);
+            }
         }
 
         document.getElementById("login-btn").addEventListener("click", async () => {
@@ -152,6 +217,7 @@
         document.getElementById("basket-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             document.getElementById("dashboard-error").hidden = true;
+            const arvValue = document.getElementById("b-arv").value;
             const response = await fetch("/api/admin/manage", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -160,6 +226,7 @@
                     name: document.getElementById("b-name").value,
                     description: document.getElementById("b-desc").value,
                     image_path: document.getElementById("b-image").value,
+                    arv_cents: arvValue === "" ? null : Math.round(parseFloat(arvValue) * 100),
                 }),
             });
             if (!response.ok) {
@@ -172,6 +239,7 @@
             }
             e.target.reset();
             alert("Basket added.");
+            await loadBaskets();
         });
 
         document.getElementById("workshop-form").addEventListener("submit", async (e) => {

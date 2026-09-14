@@ -3,7 +3,7 @@ import { env } from "cloudflare:test";
 import { onRequestPost as loginHandler } from "../../functions/api/admin/login.js";
 import { onRequestGet as entriesHandler } from "../../functions/api/admin/entries.js";
 import { onRequestPost as manageHandler } from "../../functions/api/admin/manage.js";
-import { insertDonation } from "../../lib/db.js";
+import { insertDonation, insertBasket } from "../../lib/db.js";
 
 function authedRequest(url) {
   return new Request(url, { headers: { Cookie: "levelup_admin=correct-horse" } });
@@ -216,6 +216,62 @@ describe("POST /api/admin/manage", () => {
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.id).toBeDefined();
+  });
+
+  it("creates a basket with an optional ARV", async () => {
+    const response = await manageHandler({
+      request: new Request("https://levelupgloucester.org/api/admin/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "levelup_admin=correct-horse" },
+        body: JSON.stringify({
+          kind: "basket",
+          name: "Wingspan Bundle",
+          description: "Wingspan + European expansion",
+          image_path: "images/baskets/wingspan.jpg",
+          arv_cents: 15000,
+        }),
+      }),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.id).toBeDefined();
+  });
+
+  it("rejects a negative ARV", async () => {
+    const response = await manageHandler({
+      request: new Request("https://levelupgloucester.org/api/admin/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "levelup_admin=correct-horse" },
+        body: JSON.stringify({
+          kind: "basket",
+          name: "Bad Bundle",
+          description: "invalid arv",
+          image_path: "images/baskets/bad.jpg",
+          arv_cents: -100,
+        }),
+      }),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(400);
+  });
+
+  it("updates a basket's ARV after creation", async () => {
+    const { id } = await insertBasket(env.DB, {
+      name: "Terraforming Mars Bundle",
+      description: "Terraforming Mars + expansion",
+      image_path: "images/baskets/tm.jpg",
+    });
+
+    const response = await manageHandler({
+      request: new Request("https://levelupgloucester.org/api/admin/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "levelup_admin=correct-horse" },
+        body: JSON.stringify({ kind: "basket_arv", id, arv_cents: 8500 }),
+      }),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(200);
   });
 
   it("400s on a malformed JSON body instead of throwing", async () => {

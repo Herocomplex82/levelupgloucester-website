@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donate | Level Up Gloucester</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <a href="index.html" class="logo"><img src="images/logo.png" alt="Level Up Gloucester" style="height:100px;width:auto;display:block;"></a>
+            <nav>
+                <a href="index.html#about">About</a>
+                <a href="register.html">Workshop Days</a>
+                <a href="raffle.html">Raffle</a>
+                <a href="donate.html">Donate</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Support Level Up Gloucester</h1>
+                <p class="lead">Level Up Inc. is a Massachusetts nonprofit corporation. Our 501(c)(3) federal tax-exempt determination is pending — donations are not currently tax-deductible.</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container">
+                <div id="form-error" class="form-error" hidden></div>
+                <form id="donate-form">
+                    <div class="form-field">
+                        <label for="amount">Amount</label>
+                        <select id="amount">
+                            <option value="4000">$40 — sponsors a half-day for a child</option>
+                            <option value="6500">$65 — sponsors a full day for a child</option>
+                            <option value="custom">Custom amount</option>
+                        </select>
+                    </div>
+                    <div class="form-field" id="custom-amount-field" hidden>
+                        <label for="customAmount">Custom amount (USD)</label>
+                        <input type="number" id="customAmount" min="1" step="1">
+                    </div>
+                    <div class="form-field checkbox">
+                        <input type="checkbox" id="sponsorAChild">
+                        <label for="sponsorAChild">Earmark my donation to sponsor another child's registration.</label>
+                    </div>
+                    <div class="form-field">
+                        <label for="donorName">Your name</label>
+                        <input type="text" id="donorName" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="donorEmail">Your email</label>
+                        <input type="email" id="donorEmail" required>
+                    </div>
+                    <button type="submit" class="btn">Continue to Payment &rarr;</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer id="contact">
+        <div class="container">
+            <p>&copy; Level Up Inc. | levelupgloucester@gmail.com</p>
+        </div>
+    </footer>
+
+    <script>
+        const amountSelect = document.getElementById("amount");
+        const customField = document.getElementById("custom-amount-field");
+        amountSelect.addEventListener("change", () => {
+            customField.hidden = amountSelect.value !== "custom";
+        });
+
+        document.getElementById("donate-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const errorBox = document.getElementById("form-error");
+            errorBox.hidden = true;
+
+            const amountCents =
+                amountSelect.value === "custom"
+                    ? Math.round(Number(document.getElementById("customAmount").value) * 100)
+                    : Number(amountSelect.value);
+
+            const body = {
+                type: "donation",
+                amountCents,
+                designation: document.getElementById("sponsorAChild").checked ? "sponsor_a_child" : "general",
+                donorName: document.getElementById("donorName").value,
+                donorEmail: document.getElementById("donorEmail").value,
+            };
+
+            const response = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                errorBox.textContent = result.error || "Something went wrong. Please try again.";
+                errorBox.hidden = false;
+                return;
+            }
+
+            window.location.href = result.url;
+        });
+    </script>
+</body>
+</html>

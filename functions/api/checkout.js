@@ -156,9 +156,10 @@ async function handleRegistration(body, env, origin) {
     });
 
     return Response.json({ url: session.url });
-  } catch {
+  } catch (err) {
+    console.error(`checkout: registration handler failed for workshopDayId=${body.workshopDayId}: ${err.message}`);
     await releaseSeat(env.DB, body.workshopDayId);
-    return Response.json({ error: "Something went wrong, please try again" }, { status: 500 });
+    return Response.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }
 
@@ -224,7 +225,8 @@ export async function onRequestPost({ request, env }) {
       default:
         return Response.json({ error: "Unknown type" }, { status: 400 });
     }
-  } catch {
+  } catch (err) {
+    console.error(`checkout: request failed (type=${body.type}): ${err.message}`);
     return Response.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

@@ -289,6 +289,7 @@ describe("POST /api/checkout — registration", () => {
       },
     };
     vi.spyOn(stripeLib, "getStripeClient").mockReturnValue(stripe);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const response = await onRequestPost({
       env,
@@ -312,9 +313,15 @@ describe("POST /api/checkout — registration", () => {
 
     expect(response.status).toBe(500);
     const body = await response.json();
-    expect(body.error).toBe("Something went wrong, please try again");
+    expect(body.error).toBe("Something went wrong. Please try again.");
     expect(body.error).not.toMatch(/sk_live/);
     expect(JSON.stringify(body)).not.toMatch(/sk_live/);
+
+    // Finding 6: the failure must be logged server-side instead of swallowed silently.
+    // (The client-facing response is what must never leak the secret — asserted above;
+    // server-side diagnostic logging of the error's own .message is expected per the fix.)
+    expect(errorSpy).toHaveBeenCalled();
+    errorSpy.mockRestore();
 
     const day = await getWorkshopDayById(env.DB, workshopDayId);
     expect(day.seats_taken).toBe(0);
@@ -361,6 +368,7 @@ describe("POST /api/checkout — top-level error handling", () => {
     vi.spyOn(stripeLib, "getStripeClient").mockImplementation(() => {
       throw new Error("unexpected internal failure: env.STRIPE_SECRET_KEY=sk_live_super_secret");
     });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const response = await onRequestPost({
       env,
@@ -378,6 +386,10 @@ describe("POST /api/checkout — top-level error handling", () => {
     expect(body.error).toBe("Something went wrong. Please try again.");
     expect(body.error).not.toMatch(/sk_live/);
     expect(JSON.stringify(body)).not.toMatch(/sk_live/);
+
+    // Finding 6: unexpected failures must be logged server-side instead of swallowed silently.
+    expect(errorSpy).toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 });
 

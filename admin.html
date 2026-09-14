@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Level Up Gloucester</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+    <main>
+        <section class="container" style="padding-top:3rem;">
+            <h1>Level Up Admin</h1>
+
+            <div id="login-panel">
+                <div class="form-field"><label for="password">Admin password</label><input type="password" id="password"></div>
+                <button id="login-btn" class="btn">Log In</button>
+                <p id="login-error" class="form-error" hidden></p>
+            </div>
+
+            <div id="dashboard" hidden>
+                <h2>Raffle Entries <a href="/api/admin/entries?type=raffle&format=csv" download>Download CSV</a></h2>
+                <div id="raffle-table"></div>
+
+                <h2>Registrations <a href="/api/admin/entries?type=registrations&format=csv" download>Download CSV</a></h2>
+                <div id="registrations-table"></div>
+
+                <h2>Donations <a href="/api/admin/entries?type=donations&format=csv" download>Download CSV</a></h2>
+                <div id="donations-table"></div>
+
+                <h2>Add a Basket</h2>
+                <form id="basket-form">
+                    <div class="form-field"><label for="b-name">Name</label><input type="text" id="b-name" required></div>
+                    <div class="form-field"><label for="b-desc">Description</label><input type="text" id="b-desc" required></div>
+                    <div class="form-field"><label for="b-image">Image path (e.g. images/baskets/catan.jpg — commit the file first)</label><input type="text" id="b-image" required></div>
+                    <button type="submit" class="btn">Add Basket</button>
+                </form>
+
+                <h2>Add a Workshop Day</h2>
+                <form id="workshop-form">
+                    <div class="form-field"><label for="w-title">Title</label><input type="text" id="w-title" required></div>
+                    <div class="form-field"><label for="w-date">Date</label><input type="date" id="w-date" required></div>
+                    <div class="form-field"><label for="w-location">Location</label><input type="text" id="w-location" required></div>
+                    <div class="form-field"><label for="w-full">Full-day price (USD)</label><input type="number" id="w-full" value="65" required></div>
+                    <div class="form-field"><label for="w-half">Half-day price (USD)</label><input type="number" id="w-half" value="40" required></div>
+                    <div class="form-field"><label for="w-capacity">Capacity</label><input type="number" id="w-capacity" required></div>
+                    <button type="submit" class="btn">Add Workshop Day</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function renderTable(containerId, rows) {
+            const container = document.getElementById(containerId);
+            if (rows.length === 0) {
+                container.textContent = "None yet.";
+                return;
+            }
+            const headers = Object.keys(rows[0]);
+            const table = document.createElement("table");
+            table.style.width = "100%";
+            table.style.borderCollapse = "collapse";
+            table.innerHTML =
+                `<thead><tr>${headers.map((h) => `<th style="text-align:left;border-bottom:1px solid #ccc;padding:0.5rem;">${h}</th>`).join("")}</tr></thead>` +
+                `<tbody>${rows
+                    .map(
+                        (r) =>
+                            `<tr>${headers.map((h) => `<td style="padding:0.5rem;border-bottom:1px solid #eee;">${r[h] ?? ""}</td>`).join("")}</tr>`
+                    )
+                    .join("")}</tbody>`;
+            container.innerHTML = "";
+            container.appendChild(table);
+        }
+
+        async function loadDashboard() {
+            for (const [type, containerId] of [
+                ["raffle", "raffle-table"],
+                ["registrations", "registrations-table"],
+                ["donations", "donations-table"],
+            ]) {
+                const response = await fetch(`/api/admin/entries?type=${type}`);
+                if (response.ok) renderTable(containerId, await response.json());
+            }
+        }
+
+        document.getElementById("login-btn").addEventListener("click", async () => {
+            const password = document.getElementById("password").value;
+            const response = await fetch("/api/admin/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password }),
+            });
+            if (!response.ok) {
+                document.getElementById("login-error").hidden = false;
+                document.getElementById("login-error").textContent = "Incorrect password.";
+                return;
+            }
+            document.getElementById("login-panel").hidden = true;
+            document.getElementById("dashboard").hidden = false;
+            loadDashboard();
+        });
+
+        document.getElementById("basket-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await fetch("/api/admin/manage", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    kind: "basket",
+                    name: document.getElementById("b-name").value,
+                    description: document.getElementById("b-desc").value,
+                    image_path: document.getElementById("b-image").value,
+                }),
+            });
+            e.target.reset();
+            alert("Basket added.");
+        });
+
+        document.getElementById("workshop-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await fetch("/api/admin/manage", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    kind: "workshop_day",
+                    title: document.getElementById("w-title").value,
+                    eventDate: document.getElementById("w-date").value,
+                    location: document.getElementById("w-location").value,
+                    priceFullCents: Math.round(Number(document.getElementById("w-full").value) * 100),
+                    priceHalfCents: Math.round(Number(document.getElementById("w-half").value) * 100),
+                    capacity: Number(document.getElementById("w-capacity").value),
+                }),
+            });
+            e.target.reset();
+            loadDashboard();
+            alert("Workshop day added.");
+        });
+    </script>
+</body>
+</html>

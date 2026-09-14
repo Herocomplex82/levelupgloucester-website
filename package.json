@@ -1,0 +1,20 @@
+{
+  "name": "levelup-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "test": "vitest run",
+    "migrate:local": "wrangler d1 migrations apply levelup-payments --local",
+    "migrate:remote": "wrangler d1 migrations apply levelup-payments --remote",
+    "deploy": "wrangler pages deploy ."
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.12.0",
+    "vitest": "^3.2.0",
+    "wrangler": "^4.0.0"
+  },
+  "dependencies": {
+    "stripe": "^19.0.0"
+  }
+}

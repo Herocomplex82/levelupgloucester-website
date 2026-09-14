@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Level Up Gloucester</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+    <main>
+        <section class="container" style="padding-top:3rem;">
+            <h1>Level Up Admin</h1>
+
+            <div id="login-panel">
+                <div class="form-field"><label for="password">Admin password</label><input type="password" id="password"></div>
+                <button id="login-btn" class="btn">Log In</button>
+                <p id="login-error" class="form-error" hidden></p>
+            </div>
+
+            <div id="dashboard" hidden>
+                <p id="dashboard-error" class="form-error" hidden></p>
+
+                <h2>Raffle Entries <a href="/api/admin/entries?type=raffle&format=csv" download>Download CSV</a></h2>
+                <div id="raffle-table"></div>
+
+                <h2>Registrations <a href="/api/admin/entries?type=registrations&format=csv" download>Download CSV</a></h2>
+                <div id="registrations-table"></div>
+
+                <h2>Donations <a href="/api/admin/entries?type=donations&format=csv" download>Download CSV</a></h2>
+                <div id="donations-table"></div>
+
+                <h2>Add a Basket</h2>
+                <form id="basket-form">
+                    <div class="form-field"><label for="b-name">Name</label><input type="text" id="b-name" required></div>
+                    <div class="form-field"><label for="b-desc">Description</label><input type="text" id="b-desc" required></div>
+                    <div class="form-field"><label for="b-image">Image path (e.g. images/baskets/catan.jpg — commit the file first)</label><input type="text" id="b-image" required></div>
+                    <button type="submit" class="btn">Add Basket</button>
+                </form>
+
+                <h2>Add a Workshop Day</h2>
+                <form id="workshop-form">
+                    <div class="form-field"><label for="w-title">Title</label><input type="text" id="w-title" required></div>
+                    <div class="form-field"><label for="w-date">Date</label><input type="date" id="w-date" required></div>
+                    <div class="form-field"><label for="w-location">Location</label><input type="text" id="w-location" required></div>
+                    <div class="form-field"><label for="w-full">Full-day price (USD)</label><input type="number" id="w-full" value="65" required></div>
+                    <div class="form-field"><label for="w-half">Half-day price (USD)</label><input type="number" id="w-half" value="40" required></div>
+                    <div class="form-field"><label for="w-capacity">Capacity</label><input type="number" id="w-capacity" required></div>
+                    <button type="submit" class="btn">Add Workshop Day</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function renderTable(containerId, rows) {
+            const container = document.getElementById(containerId);
+            if (rows.length === 0) {
+                container.textContent = "None yet.";
+                return;
+            }
+            const headers = Object.keys(rows[0]);
+            const table = document.createElement("table");
+            table.style.width = "100%";
+            table.style.borderCollapse = "collapse";
+
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+            for (const h of headers) {
+                const th = document.createElement("th");
+                th.textContent = h;
+                th.style.cssText = "text-align:left;border-bottom:1px solid #ccc;padding:0.5rem;";
+                headerRow.appendChild(th);
+            }
+            thead.appendChild(headerRow);
+
+            const tbody = document.createElement("tbody");
+            for (const r of rows) {
+                const tr = document.createElement("tr");
+                for (const h of headers) {
+                    const td = document.createElement("td");
+                    td.textContent = r[h] ?? "";
+                    td.style.cssText = "padding:0.5rem;border-bottom:1px solid #eee;";
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            container.replaceChildren(table);
+        }
+
+        function showLoginPanel() {
+            document.getElementById("dashboard").hidden = true;
+            document.getElementById("login-panel").hidden = false;
+        }
+
+        function showDashboardError(message) {
+            const errorBox = document.getElementById("dashboard-error");
+            errorBox.textContent = message;
+            errorBox.hidden = false;
+        }
+
+        async function readErrorMessage(response, fallback) {
+            try {
+                const result = await response.json();
+                return result.error || fallback;
+            } catch {
+                return fallback;
+            }
+        }
+
+        async function loadDashboard() {
+            document.getElementById("dashboard-error").hidden = true;
+            for (const [type, containerId] of [
+                ["raffle", "raffle-table"],
+                ["registrations", "registrations-table"],
+                ["donations", "donations-table"],
+            ]) {
+                const response = await fetch(`/api/admin/entries?type=${type}`);
+                if (response.ok) {
+                    renderTable(containerId, await response.json());
+                    continue;
+                }
+                if (response.status === 401) {
+                    showLoginPanel();
+                    return;
+                }
+                showDashboardError(await readErrorMessage(response, `Failed to load ${type}.`));
+            }
+        }
+
+        document.getElementById("login-btn").addEventListener("click", async () => {
+            const password = document.getElementById("password").value;
+            const response = await fetch("/api/admin/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password }),
+            });
+            if (!response.ok) {
+                document.getElementById("login-error").hidden = false;
+                document.getElementById("login-error").textContent = "Incorrect password.";
+                return;
+            }
+            document.getElementById("login-panel").hidden = true;
+            document.getElementById("dashboard").hidden = false;
+            loadDashboard();
+        });
+
+        document.getElementById("basket-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            document.getElementById("dashboard-error").hidden = true;
+            const response = await fetch("/api/admin/manage", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    kind: "basket",
+                    name: document.getElementById("b-name").value,
+                    description: document.getElementById("b-desc").value,
+                    image_path: document.getElementById("b-image").value,
+                }),
+            });
+            if (!response.ok) {
+                if (response.status === 401) {
+                    showLoginPanel();
+                    return;
+                }
+                showDashboardError(await readErrorMessage(response, "Failed to add basket."));
+                return;
+            }
+            e.target.reset();
+            alert("Basket added.");
+        });
+
+        document.getElementById("workshop-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            document.getElementById("dashboard-error").hidden = true;
+            const response = await fetch("/api/admin/manage", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    kind: "workshop_day",
+                    title: document.getElementById("w-title").value,
+                    eventDate: document.getElementById("w-date").value,
+                    location: document.getElementById("w-location").value,
+                    priceFullCents: Math.round(Number(document.getElementById("w-full").value) * 100),
+                    priceHalfCents: Math.round(Number(document.getElementById("w-half").value) * 100),
+                    capacity: Number(document.getElementById("w-capacity").value),
+                }),
+            });
+            if (!response.ok) {
+                if (response.status === 401) {
+                    showLoginPanel();
+                    return;
+                }
+                showDashboardError(await readErrorMessage(response, "Failed to add workshop day."));
+                return;
+            }
+            e.target.reset();
+            loadDashboard();
+            alert("Workshop day added.");
+        });
+    </script>
+</body>
+</html>

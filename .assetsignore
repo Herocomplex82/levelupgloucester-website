@@ -1,0 +1,38 @@
+# Cloudflare Pages direct-upload asset exclusions.
+#
+# `wrangler pages deploy` uploads pages_build_output_dir ("." for this project)
+# as publicly-fetchable static assets. It only auto-excludes node_modules,
+# .DS_Store, and .git — it does NOT consult .gitignore. Everything listed here
+# would otherwise be uploaded and made fetchable by anyone as a static file.
+#
+# This does NOT affect Pages Functions: `functions/api/*.js` importing from
+# `lib/*.js` is resolved and bundled into the Worker at BUILD time by
+# Wrangler's function bundler (esbuild), which reads source files from disk
+# directly — it is a separate step from the static-asset upload this file
+# governs. Excluding lib/ here only stops it from being served as a
+# downloadable URL; it does not stop Functions from importing it.
+#
+# Secrets — never let local dev secrets reach a public asset URL.
+.dev.vars
+.dev.vars.example
+
+# Server-side/source-only code — not meant to be fetchable, and lib/ imports
+# are inlined into the Functions Worker bundle at build time regardless.
+lib/
+test/
+migrations/
+
+# Project docs and planning artifacts — not part of the public site.
+docs/
+.superpowers/
+*.md
+
+# Tooling/config — irrelevant (and potentially informative to an attacker)
+# as a public asset.
+node_modules/
+package.json
+package-lock.json
+wrangler.toml
+vitest.config.js
+.gitignore
+.npmrc

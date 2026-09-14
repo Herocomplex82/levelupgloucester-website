@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holiday Basket Sweepstakes | Level Up Gloucester</title>
+    <meta name="description" content="Enter Level Up Gloucester's holiday board-game basket sweepstakes. No purchase necessary.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <a href="index.html" class="logo"><img src="images/logo.png" alt="Level Up Gloucester" style="height:100px;width:auto;display:block;"></a>
+            <nav>
+                <a href="index.html#about">About</a>
+                <a href="register.html">Workshop Days</a>
+                <a href="raffle.html">Raffle</a>
+                <a href="donate.html">Donate</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Holiday Basket Sweepstakes</h1>
+                <p class="lead">Choose a basket, then enter for your chance to win. Entries are $1 each, or 6 for $5. <strong>No purchase is necessary to enter or win</strong> — see "Enter Free" below.</p>
+            </div>
+        </section>
+
+        <section id="baskets" class="bg-light">
+            <div class="container">
+                <h2>This Year's Baskets</h2>
+                <div id="basket-grid" class="programs-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:2rem;"></div>
+            </div>
+        </section>
+
+        <section id="enter">
+            <div class="container">
+                <h2>Enter to Win</h2>
+                <div id="form-error" class="form-error" hidden></div>
+                <form id="entry-form">
+                    <div class="form-field">
+                        <label for="basketId">Which basket?</label>
+                        <select id="basketId" name="basketId" required></select>
+                    </div>
+                    <div class="form-field">
+                        <label for="ticketCount">How many entries? ($1 each, 6 for $5)</label>
+                        <input type="number" id="ticketCount" name="ticketCount" min="1" value="1" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="donorName">Your name</label>
+                        <input type="text" id="donorName" name="donorName" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="donorEmail">Your email</label>
+                        <input type="email" id="donorEmail" name="donorEmail" required>
+                    </div>
+                    <button type="submit" class="btn">Continue to Payment &rarr;</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="enter-free" class="bg-light">
+            <div class="container">
+                <h2>Enter Free by Mail</h2>
+                <p>No purchase is necessary to enter or win. To enter without donating, mail a 3&times;5 card with your full name, mailing address, email, phone number, and the name of the basket you'd like to enter to:</p>
+                <p><strong>Level Up Inc.</strong><br>Attn: Holiday Sweepstakes<br>Gloucester, MA</p>
+                <p>Limit one free mail-in entry per person/household per basket. Mailed entries must be received before the drawing date and receive the average number of entries earned by paid entrants for that basket, rounded up.</p>
+            </div>
+        </section>
+
+        <section id="official-rules">
+            <div class="container">
+                <h2>Official Rules</h2>
+                <p><strong>NO PURCHASE, DONATION, OR PAYMENT OF ANY KIND IS NECESSARY TO ENTER OR WIN. A donation will not increase your odds of winning relative to other paid entries, beyond the number of entries purchased.</strong></p>
+                <p><strong>Sponsor:</strong> Level Up Inc., a Massachusetts nonprofit corporation, Gloucester, MA.</p>
+                <p><strong>Eligibility:</strong> Open to legal residents of Massachusetts 18 years of age or older. Void where prohibited.</p>
+                <p><strong>How to Enter:</strong> Purchase one or more $1 entries (or a 6-for-$5 bundle) at levelupgloucester.org/raffle.html, choosing the basket you wish to enter, OR enter free by mail as described above. Limit one free entry per person/household per basket.</p>
+                <p><strong>Odds of Winning:</strong> Depend on the total number of eligible entries received for each basket.</p>
+                <p><strong>Winner Selection:</strong> One winner per basket will be drawn at random from all eligible entries for that basket on the drawing date announced on this page. Winners will be notified by the email or phone number provided at entry within 30 days of the drawing and must respond within 7 days to claim their prize or it will be forfeited and re-drawn.</p>
+                <p><strong>Prizes:</strong> Each basket is described on this page along with its approximate retail value. Level Up Inc. reserves the right to substitute a prize of equal or greater value. Prizes are provided as-is with no warranty.</p>
+                <p><strong>Governing Law:</strong> This sweepstakes is governed by the laws of the Commonwealth of Massachusetts.</p>
+                <p><em>This section will be finalized with the actual drawing date before entries open — do not publish live until reviewed.</em></p>
+            </div>
+        </section>
+    </main>
+
+    <footer id="contact">
+        <div class="container">
+            <p>&copy; Level Up Inc. | levelupgloucester@gmail.com</p>
+        </div>
+    </footer>
+
+    <script>
+        async function loadBaskets() {
+            const response = await fetch("/api/baskets");
+            const baskets = await response.json();
+
+            const grid = document.getElementById("basket-grid");
+            grid.innerHTML = "";
+            baskets.forEach((b) => {
+                const card = document.createElement("div");
+                card.className = "program-card";
+
+                const img = document.createElement("img");
+                img.src = b.image_path;
+                img.alt = b.name;
+                img.style.marginBottom = "1.5rem";
+
+                const heading = document.createElement("h3");
+                heading.textContent = b.name;
+
+                const description = document.createElement("p");
+                description.textContent = b.description;
+
+                card.append(img, heading, description);
+                grid.appendChild(card);
+            });
+
+            const select = document.getElementById("basketId");
+            select.innerHTML = "";
+            baskets.forEach((b) => {
+                select.appendChild(new Option(b.name, b.id));
+            });
+        }
+
+        document.getElementById("entry-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const errorBox = document.getElementById("form-error");
+            errorBox.hidden = true;
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            const body = {
+                type: "raffle",
+                basketId: Number(document.getElementById("basketId").value),
+                ticketCount: Number(document.getElementById("ticketCount").value),
+                donorName: document.getElementById("donorName").value,
+                donorEmail: document.getElementById("donorEmail").value,
+            };
+
+            try {
+                const response = await fetch("/api/checkout", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    errorBox.textContent = result.error || "Something went wrong. Please try again.";
+                    errorBox.hidden = false;
+                    return;
+                }
+
+                window.location.href = result.url;
+            } catch (err) {
+                errorBox.textContent = "Network error. Please check your connection and try again.";
+                errorBox.hidden = false;
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+
+        loadBaskets();
+    </script>
+</body>
+</html>

@@ -60,7 +60,7 @@
                     <div class="form-field"><label for="allergiesMedical">Allergies or medical conditions we should know about</label><textarea id="allergiesMedical"></textarea></div>
 
                     <h3>Assumption of Risk &amp; Release of Liability</h3>
-                    <p>I understand that my child will be participating in tabletop gaming activities (board games, card games, and role playing games such as Dungeons &amp; Dragons) supervised by Level Up Inc. staff and volunteers. While these are low-physical-risk activities, I understand that any group activity carries some inherent risk, including minor injury, illness, or property loss. In consideration of my child being permitted to participate, I assume all ordinary risks; release and hold harmless Level Up Inc., its directors, officers, employees, and volunteers, and the event venue, from any and all claims, liability, or expenses arising from my child's participation, except in cases of gross negligence or willful misconduct; authorize Level Up Inc. staff to seek emergency medical treatment for my child if I cannot be reached immediately, agreeing to be responsible for any resulting medical costs; and confirm the information provided above is accurate.</p>
+                    <p>I understand that my child will be participating in tabletop gaming activities (board games, card games, and role playing games such as Dungeons &amp; Dragons) supervised by Level Up Inc. staff and volunteers. While these are low-physical-risk activities, I understand that any group activity carries some inherent risk, including minor injury, illness, or property loss. In consideration of my child being permitted to participate, I, the undersigned parent/guardian, agree to the following on behalf of myself, my child, and our heirs: I assume all ordinary risks associated with my child's participation in Level Up Gloucester program activities; release and hold harmless Level Up Inc., its directors, officers, employees, and volunteers, and <span id="waiver-venue-name">the event venue</span>, from any and all claims, liability, or expenses arising from my child's participation, except in cases of gross negligence or willful misconduct; authorize Level Up Inc. staff to seek emergency medical treatment for my child if I cannot be reached immediately, agreeing to be responsible for any resulting medical costs; and confirm the information provided above is accurate, including any medical/allergy information.</p>
                     <div class="form-field checkbox">
                         <input type="checkbox" id="waiverAccepted" required>
                         <label for="waiverAccepted">I have read and agree to the above.</label>
@@ -89,17 +89,34 @@
     </footer>
 
     <script>
+        let workshopDaysById = {};
+
+        function updateWaiverVenueName() {
+            const select = document.getElementById("workshopDayId");
+            const venueSpan = document.getElementById("waiver-venue-name");
+            const selectedDay = workshopDaysById[select.value];
+            venueSpan.textContent = selectedDay ? selectedDay.location : "the event venue";
+        }
+
         async function loadWorkshopDays() {
             const response = await fetch("/api/workshop-days");
             const days = await response.json();
             const select = document.getElementById("workshopDayId");
-            select.innerHTML = days
-                .map(
-                    (d) =>
-                        `<option value="${d.id}">${d.title} — ${d.event_date} (${d.seatsRemaining} seats left)</option>`
-                )
-                .join("");
+
+            workshopDaysById = {};
+            select.innerHTML = "";
+            days.forEach((d) => {
+                workshopDaysById[d.id] = d;
+                const labelText = `${d.title} — ${d.event_date} (${d.seatsRemaining} seats left)`;
+                select.appendChild(new Option(labelText, d.id));
+            });
+
+            updateWaiverVenueName();
         }
+
+        document
+            .getElementById("workshopDayId")
+            .addEventListener("change", updateWaiverVenueName);
 
         document.getElementById("registration-form").addEventListener("submit", async (e) => {
             e.preventDefault();

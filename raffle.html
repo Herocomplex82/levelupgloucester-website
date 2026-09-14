@@ -102,19 +102,31 @@
             const baskets = await response.json();
 
             const grid = document.getElementById("basket-grid");
-            grid.innerHTML = baskets
-                .map(
-                    (b) => `
-                    <div class="program-card">
-                        <img src="${b.image_path}" alt="${b.name}" style="margin-bottom:1.5rem;">
-                        <h3>${b.name}</h3>
-                        <p>${b.description}</p>
-                    </div>`
-                )
-                .join("");
+            grid.innerHTML = "";
+            baskets.forEach((b) => {
+                const card = document.createElement("div");
+                card.className = "program-card";
+
+                const img = document.createElement("img");
+                img.src = b.image_path;
+                img.alt = b.name;
+                img.style.marginBottom = "1.5rem";
+
+                const heading = document.createElement("h3");
+                heading.textContent = b.name;
+
+                const description = document.createElement("p");
+                description.textContent = b.description;
+
+                card.append(img, heading, description);
+                grid.appendChild(card);
+            });
 
             const select = document.getElementById("basketId");
-            select.innerHTML = baskets.map((b) => `<option value="${b.id}">${b.name}</option>`).join("");
+            select.innerHTML = "";
+            baskets.forEach((b) => {
+                select.appendChild(new Option(b.name, b.id));
+            });
         }
 
         document.getElementById("entry-form").addEventListener("submit", async (e) => {

@@ -8,7 +8,12 @@ export async function onRequestPost({ request, env }) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
   if (body.kind === "basket") {
     const missing = requireFields(body, ["name", "description", "image_path"]);
@@ -30,6 +35,15 @@ export async function onRequestPost({ request, env }) {
     ]);
     if (missing.length > 0) {
       return Response.json({ error: `Missing fields: ${missing.join(", ")}` }, { status: 400 });
+    }
+    if (!Number.isInteger(body.capacity) || body.capacity < 0) {
+      return Response.json({ error: "capacity must be a non-negative integer" }, { status: 400 });
+    }
+    if (!Number.isInteger(body.priceFullCents) || body.priceFullCents < 0) {
+      return Response.json({ error: "priceFullCents must be a non-negative integer" }, { status: 400 });
+    }
+    if (!Number.isInteger(body.priceHalfCents) || body.priceHalfCents < 0) {
+      return Response.json({ error: "priceHalfCents must be a non-negative integer" }, { status: 400 });
     }
     const result = await insertWorkshopDay(env.DB, body);
     return Response.json(result);

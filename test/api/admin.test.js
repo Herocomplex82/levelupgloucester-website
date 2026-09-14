@@ -36,6 +36,18 @@ describe("POST /api/admin/login", () => {
     });
     expect(response.status).toBe(401);
   });
+
+  it("400s on a malformed JSON body instead of throwing", async () => {
+    const request = new Request("https://levelupgloucester.org/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "CF-Connecting-IP": "203.0.113.2" },
+      body: "{not valid json",
+    });
+    const response = await loginHandler({ request, env: { ...env, ADMIN_TOKEN: "correct-horse" } });
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toBe("Invalid JSON body");
+  });
 });
 
 describe("POST /api/admin/login — brute-force lockout", () => {
@@ -204,5 +216,90 @@ describe("POST /api/admin/manage", () => {
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.id).toBeDefined();
+  });
+
+  it("400s on a malformed JSON body instead of throwing", async () => {
+    const response = await manageHandler({
+      request: new Request("https://levelupgloucester.org/api/admin/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "levelup_admin=correct-horse" },
+        body: "{not valid json",
+      }),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toBe("Invalid JSON body");
+  });
+
+  it("creates a workshop day with valid numeric fields", async () => {
+    const response = await manageHandler({
+      request: new Request("https://levelupgloucester.org/api/admin/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "levelup_admin=correct-horse" },
+        body: JSON.stringify({
+          kind: "workshop_day",
+          title: "May Vacation Workshop",
+          eventDate: "2027-05-01",
+          location: "TBD",
+          priceFullCents: 6500,
+          priceHalfCents: 4000,
+          capacity: 12,
+        }),
+      }),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.id).toBeDefined();
+  });
+
+  it("400s when capacity is not an integer, and does not insert a row", async () => {
+    const { results: before } = await env.DB.prepare("SELECT COUNT(*) AS count FROM workshop_days").all();
+
+    const response = await manageHandler({
+      request: new Request("https://levelupgloucester.org/api/admin/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "levelup_admin=correct-horse" },
+        body: JSON.stringify({
+          kind: "workshop_day",
+          title: "Bad Capacity Workshop",
+          eventDate: "2027-05-02",
+          location: "TBD",
+          priceFullCents: 6500,
+          priceHalfCents: 4000,
+          capacity: "twenty",
+        }),
+      }),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toMatch(/capacity/);
+
+    const { results: after } = await env.DB.prepare("SELECT COUNT(*) AS count FROM workshop_days").all();
+    expect(after[0].count).toBe(before[0].count);
+  });
+
+  it("400s when priceFullCents is a non-integer number, and does not insert a row", async () => {
+    const response = await manageHandler({
+      request: new Request("https://levelupgloucester.org/api/admin/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "levelup_admin=correct-horse" },
+        body: JSON.stringify({
+          kind: "workshop_day",
+          title: "Bad Price Workshop",
+          eventDate: "2027-05-03",
+          location: "TBD",
+          priceFullCents: 65.5,
+          priceHalfCents: 4000,
+          capacity: 10,
+        }),
+      }),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toMatch(/priceFullCents/);
   });
 });

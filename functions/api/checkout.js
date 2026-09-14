@@ -1,6 +1,6 @@
 // functions/api/checkout.js
 import { getStripeClient } from "../../lib/stripe.js";
-import { isValidEmail, requireFields } from "../../lib/validate.js";
+import { isValidEmail, redactSecrets, requireFields } from "../../lib/validate.js";
 import {
   getBasketById,
   getWorkshopDayById,
@@ -157,7 +157,9 @@ async function handleRegistration(body, env, origin) {
 
     return Response.json({ url: session.url });
   } catch (err) {
-    console.error(`checkout: registration handler failed for workshopDayId=${body.workshopDayId}: ${err.message}`);
+    console.error(
+      `checkout: registration handler failed for workshopDayId=${body.workshopDayId}: ${redactSecrets(err.message)}`
+    );
     await releaseSeat(env.DB, body.workshopDayId);
     return Response.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
@@ -226,7 +228,7 @@ export async function onRequestPost({ request, env }) {
         return Response.json({ error: "Unknown type" }, { status: 400 });
     }
   } catch (err) {
-    console.error(`checkout: request failed (type=${body.type}): ${err.message}`);
+    console.error(`checkout: request failed (type=${body.type}): ${redactSecrets(err.message)}`);
     return Response.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

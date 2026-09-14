@@ -239,6 +239,73 @@ describe("POST /api/stripe-webhook", () => {
     expect(registration.promo_code_used).toBe("SLIDING20");
   });
 
+  it("redacts a secret-shaped substring before logging when the promotion code lookup fails (unsanitized-error-message-logging fix)", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "June Vacation Workshop",
+      eventDate: "2027-06-21",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 10,
+    });
+    await reserveSeat(env.DB, workshopDayId);
+    const { id: registrationId } = await insertPendingRegistration(env.DB, {
+      workshopDayId,
+      childName: "Alex Rossi",
+      childDob: "2018-05-01",
+      parentName: "Steve Rossi",
+      address: "1 Main St, Gloucester, MA",
+      phone: "978-555-0100",
+      email: "parent@example.com",
+      emergencyContactName: "Jackie Rossi",
+      emergencyContactPhone: "978-555-0101",
+      allergiesMedical: "",
+      waiverAccepted: true,
+      waiverSignatureName: "Steve Rossi",
+      waiverTimestamp: new Date().toISOString(),
+      photoRelease: true,
+      registrationType: "full",
+      promoCodeUsed: null,
+    });
+
+    // Synthesize a follow-up API failure whose message happens to embed a
+    // Stripe-secret-shaped substring, as a misconfiguration error might.
+    const retrieveMock = vi
+      .fn()
+      .mockRejectedValue(new Error("invalid api key sk_live_fakeSecretForTest123 provided"));
+    vi.spyOn(stripeLib, "getStripeClient").mockReturnValue({
+      checkout: { sessions: { retrieve: retrieveMock } },
+    });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const request = await signedWebhookRequest(
+      checkoutCompletedEvent({
+        id: "cs_test_promo_lookup_fail_1",
+        amount_total: 3900,
+        total_details: { amount_discount: 2600, amount_tax: 0, amount_shipping: 0 },
+        metadata: { type: "registration", registrationId: String(registrationId), workshopDayId: String(workshopDayId) },
+      })
+    );
+
+    const response = await onRequestPost({
+      request,
+      env: { ...env, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET },
+    });
+
+    expect(response.status).toBe(200);
+    expect(errorSpy).toHaveBeenCalled();
+    const loggedMessage = errorSpy.mock.calls[0].join(" ");
+    expect(loggedMessage).not.toMatch(/sk_live_fakeSecretForTest123/);
+    expect(loggedMessage).toContain("[REDACTED]");
+
+    // The registration still confirms (promo code lookup failure degrades gracefully).
+    const registration = await env.DB.prepare("SELECT * FROM registrations WHERE id = ?").bind(registrationId).first();
+    expect(registration.status).toBe("confirmed");
+    expect(registration.promo_code_used).toBeNull();
+
+    errorSpy.mockRestore();
+  });
+
   it("records a donation", async () => {
     const request = await signedWebhookRequest(
       checkoutCompletedEvent({

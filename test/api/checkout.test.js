@@ -321,6 +321,11 @@ describe("POST /api/checkout — registration", () => {
     // (The client-facing response is what must never leak the secret — asserted above;
     // server-side diagnostic logging of the error's own .message is expected per the fix.)
     expect(errorSpy).toHaveBeenCalled();
+    // Unsanitized-error-message-logging fix: the secret-shaped substring must be
+    // redacted before it ever reaches server logs, not just the client response.
+    const loggedMessage = errorSpy.mock.calls[0].join(" ");
+    expect(loggedMessage).not.toMatch(/sk_live_super_secret/);
+    expect(loggedMessage).toContain("[REDACTED]");
     errorSpy.mockRestore();
 
     const day = await getWorkshopDayById(env.DB, workshopDayId);
@@ -389,6 +394,10 @@ describe("POST /api/checkout — top-level error handling", () => {
 
     // Finding 6: unexpected failures must be logged server-side instead of swallowed silently.
     expect(errorSpy).toHaveBeenCalled();
+    // Unsanitized-error-message-logging fix: redact secret-shaped substrings before logging.
+    const loggedMessage = errorSpy.mock.calls[0].join(" ");
+    expect(loggedMessage).not.toMatch(/sk_live_super_secret/);
+    expect(loggedMessage).toContain("[REDACTED]");
     errorSpy.mockRestore();
   });
 });

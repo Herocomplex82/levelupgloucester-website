@@ -1,6 +1,7 @@
 // functions/api/stripe-webhook.js
 import Stripe from "stripe";
 import { getStripeClient } from "../../lib/stripe.js";
+import { redactSecrets } from "../../lib/validate.js";
 import {
   insertRaffleEntry,
   confirmRegistration,
@@ -34,7 +35,7 @@ async function readAppliedPromotionCode(env, session) {
     return typeof promotionCode === "string" ? promotionCode : promotionCode.code ?? null;
   } catch (err) {
     console.error(
-      `stripe-webhook: failed to look up promotion code for session ${session.id}: ${err.message}`
+      `stripe-webhook: failed to look up promotion code for session ${session.id}: ${redactSecrets(err.message)}`
     );
     return null;
   }
@@ -119,7 +120,9 @@ export async function onRequestPost({ request, env }) {
     }
     default:
       console.error(
-        `stripe-webhook: unrecognized metadata.type "${metadata.type}" for session ${session.id}`
+        redactSecrets(
+          `stripe-webhook: unrecognized metadata.type "${metadata.type}" for session ${session.id}`
+        )
       );
       return Response.json({ received: true, ignored: "unknown metadata.type" });
   }

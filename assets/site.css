@@ -1,0 +1,100 @@
+/* assets/site.css — shared design tokens and components, extracted from
+   index.html so raffle.html / register.html / donate.html / admin.html don't
+   each duplicate ~500 lines of inline <style>. index.html itself is left
+   untouched and keeps its own inline copy. */
+
+:root {
+    --color-white: #ffffff;
+    --color-blue: #226e93;
+    --color-gray: #8c8c8c;
+    --color-dark: #212121;
+    --color-bg-light: #fafafa;
+    --font-family: 'Lato', sans-serif;
+    --header-height: 120px;
+    --spacing-section: 6rem;
+    --container-width: 1200px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: var(--header-height); }
+
+body {
+    font-family: var(--font-family);
+    color: var(--color-dark);
+    background-color: var(--color-white);
+    line-height: 1.6;
+    padding-top: var(--header-height);
+    -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; height: auto; display: block; object-fit: cover; }
+a { text-decoration: none; color: inherit; transition: color 0.3s ease; }
+
+h1, h2, h3, h4 { line-height: 1.2; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark); }
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; letter-spacing: -0.02em; }
+h2 { font-size: clamp(2rem, 4vw, 3rem); position: relative; padding-bottom: 1rem; margin-bottom: 3rem; }
+h2::after { content: ''; position: absolute; left: 0; bottom: 0; width: 60px; height: 4px; background-color: var(--color-blue); }
+h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+p { font-size: 1.125rem; margin-bottom: 1.5rem; color: var(--color-dark); opacity: 0.9; }
+
+.container { width: 100%; max-width: var(--container-width); margin: 0 auto; padding: 0 2rem; }
+section { padding: var(--spacing-section) 0; position: relative; }
+.bg-light { background-color: var(--color-bg-light); border-top: 1px solid rgba(140, 140, 140, 0.1); border-bottom: 1px solid rgba(140, 140, 140, 0.1); }
+
+header {
+    position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+    background-color: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid rgba(140, 140, 140, 0.2);
+    z-index: 300; display: flex; align-items: center;
+}
+.header-inner { display: flex; justify-content: space-between; align-items: center; height: 100%; }
+.logo { font-size: 1.5rem; font-weight: 900; color: var(--color-blue); letter-spacing: -0.02em; text-transform: uppercase; }
+nav { display: flex; gap: 2.5rem; }
+nav a { font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; position: relative; }
+
+.btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 1rem 2.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    background-color: var(--color-blue); color: var(--color-white);
+    border: 2px solid var(--color-blue); transition: all 0.3s ease; cursor: pointer;
+}
+.btn:hover { background-color: transparent; color: var(--color-blue); }
+
+.link-secondary { display: inline-block; margin-top: 1rem; font-weight: 700; font-size: 0.9rem; color: var(--color-blue); border-bottom: 1px solid transparent; }
+.link-secondary:hover { border-bottom-color: var(--color-blue); }
+
+.program-card {
+    background-color: var(--color-white); padding: 3rem;
+    border: 1px solid rgba(140, 140, 140, 0.2); position: relative;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    display: flex; flex-direction: column;
+}
+.program-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(33, 33, 33, 0.05); }
+.program-card h3 { color: var(--color-blue); margin-bottom: 1.5rem; }
+.program-card p { margin-bottom: 0; font-size: 1rem; flex-grow: 1; }
+
+footer { background-color: var(--color-dark); color: var(--color-white); padding: 5rem 0 3rem; }
+footer a, footer p { color: var(--color-gray); }
+footer a:hover { color: var(--color-white); }
+
+/* Form elements — new for the four pages that use this stylesheet */
+.form-field { margin-bottom: 1.5rem; }
+.form-field label { display: block; font-weight: 700; margin-bottom: 0.5rem; font-size: 0.95rem; }
+.form-field input[type="text"],
+.form-field input[type="email"],
+.form-field input[type="tel"],
+.form-field input[type="date"],
+.form-field input[type="number"],
+.form-field select,
+.form-field textarea {
+    width: 100%; padding: 0.75rem 1rem; font-family: var(--font-family); font-size: 1rem;
+    border: 1px solid rgba(140, 140, 140, 0.4); background: var(--color-white);
+}
+.form-field.checkbox { display: flex; align-items: flex-start; gap: 0.75rem; }
+.form-error { color: #b3261e; font-weight: 700; margin-bottom: 1rem; }
+
+@media (max-width: 768px) {
+    nav { display: none; }
+    h1 { font-size: 2.5rem; }
+}

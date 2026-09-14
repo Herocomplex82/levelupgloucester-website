@@ -4,7 +4,13 @@ const LOGIN_ATTEMPT_WINDOW_MINUTES = 15;
 const MAX_LOGIN_ATTEMPTS = 5;
 
 export async function onRequestPost({ request, env }) {
-  const { password } = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { password } = body;
   const ipAddress = request.headers.get("CF-Connecting-IP") ?? "unknown";
 
   const recentFailures = await countRecentFailedLoginAttempts(

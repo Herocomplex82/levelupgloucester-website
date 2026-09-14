@@ -16,7 +16,7 @@ CREATE TABLE raffle_entries (
   donor_email TEXT NOT NULL,
   ticket_count INTEGER NOT NULL,
   entry_method TEXT NOT NULL CHECK (entry_method IN ('paid', 'free_mail_in')),
-  stripe_session_id TEXT,
+  stripe_session_id TEXT UNIQUE,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -62,6 +62,6 @@ CREATE TABLE donations (
   donor_email TEXT NOT NULL,
   amount_cents INTEGER NOT NULL,
   designation TEXT NOT NULL CHECK (designation IN ('general','sponsor_a_child')),
-  stripe_session_id TEXT,
+  stripe_session_id TEXT UNIQUE,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

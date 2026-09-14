@@ -171,4 +171,45 @@ describe("POST /api/stripe-webhook", () => {
     expect(results[0].amount_cents).toBe(4000);
     expect(results[0].designation).toBe("sponsor_a_child");
   });
+
+  it("is idempotent when the same raffle checkout.session.completed event is redelivered", async () => {
+    const { id: basketId } = await insertBasket(env.DB, {
+      name: "Redelivery Bundle",
+      description: "Used to test webhook idempotency",
+      image_path: "images/baskets/redelivery.jpg",
+    });
+
+    const payload = checkoutCompletedEvent({
+      id: "cs_test_redelivered_raffle",
+      metadata: {
+        type: "raffle",
+        basketId: String(basketId),
+        ticketCount: "3",
+        donorName: "Jordan Lee",
+        donorEmail: "jordan@example.com",
+      },
+    });
+
+    const firstRequest = await signedWebhookRequest(payload);
+    const firstResponse = await onRequestPost({
+      request: firstRequest,
+      env: { ...env, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET },
+    });
+
+    const secondRequest = await signedWebhookRequest(payload);
+    const secondResponse = await onRequestPost({
+      request: secondRequest,
+      env: { ...env, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET },
+    });
+
+    expect(firstResponse.status).toBe(200);
+    expect(secondResponse.status).toBe(200);
+
+    const { results } = await env.DB.prepare(
+      "SELECT * FROM raffle_entries WHERE stripe_session_id = ?"
+    )
+      .bind("cs_test_redelivered_raffle")
+      .all();
+    expect(results).toHaveLength(1);
+  });
 });

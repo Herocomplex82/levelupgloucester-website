@@ -7,6 +7,10 @@ import {
   insertWorkshopDay,
   reserveSeat,
   getWorkshopDayById,
+  insertRaffleEntry,
+  insertDonation,
+  listRaffleEntries,
+  listDonations,
 } from "../../lib/db.js";
 
 describe("baskets", () => {
@@ -57,5 +61,49 @@ describe("reserveSeat", () => {
 
     const day = await getWorkshopDayById(env.DB, id);
     expect(day.seats_taken).toBe(1);
+  });
+});
+
+describe("insertRaffleEntry idempotency", () => {
+  it("ignores a duplicate insert with the same stripe_session_id", async () => {
+    const { id: basketId } = await insertBasket(env.DB, {
+      name: "Ticket to Ride Bundle",
+      description: "Ticket to Ride + expansions",
+      image_path: "images/baskets/ttr.jpg",
+    });
+
+    const entry = {
+      basketId,
+      donorName: "Jamie Walker",
+      donorEmail: "jamie@example.com",
+      ticketCount: 6,
+      entryMethod: "paid",
+      stripeSessionId: "cs_test_dup_raffle",
+    };
+
+    await insertRaffleEntry(env.DB, entry);
+    await insertRaffleEntry(env.DB, entry);
+
+    const entries = await listRaffleEntries(env.DB, { basketId });
+    expect(entries).toHaveLength(1);
+  });
+});
+
+describe("insertDonation idempotency", () => {
+  it("ignores a duplicate insert with the same stripe_session_id", async () => {
+    const donation = {
+      donorName: "Anonymous",
+      donorEmail: "donor@example.com",
+      amountCents: 4000,
+      designation: "sponsor_a_child",
+      stripeSessionId: "cs_test_dup_donation",
+    };
+
+    await insertDonation(env.DB, donation);
+    await insertDonation(env.DB, donation);
+
+    const all = await listDonations(env.DB);
+    const matching = all.filter((d) => d.stripe_session_id === "cs_test_dup_donation");
+    expect(matching).toHaveLength(1);
   });
 });

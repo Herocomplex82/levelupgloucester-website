@@ -123,6 +123,8 @@
             const errorSection = document.getElementById("form-error-section");
             const errorBox = document.getElementById("form-error");
             errorSection.hidden = true;
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
 
             const body = {
                 type: "registration",
@@ -142,20 +144,27 @@
                 photoRelease: document.getElementById("photoRelease").checked,
             };
 
-            const response = await fetch("/api/checkout", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            });
-            const result = await response.json();
+            try {
+                const response = await fetch("/api/checkout", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+                const result = await response.json();
 
-            if (!response.ok) {
-                errorBox.textContent = result.error || "Something went wrong. Please try again.";
+                if (!response.ok) {
+                    errorBox.textContent = result.error || "Something went wrong. Please try again.";
+                    errorSection.hidden = false;
+                    return;
+                }
+
+                window.location.href = result.url;
+            } catch (err) {
+                errorBox.textContent = "Network error. Please check your connection and try again.";
                 errorSection.hidden = false;
-                return;
+            } finally {
+                submitButton.disabled = false;
             }
-
-            window.location.href = result.url;
         });
 
         loadWorkshopDays();

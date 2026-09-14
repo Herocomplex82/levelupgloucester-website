@@ -80,6 +80,8 @@
             e.preventDefault();
             const errorBox = document.getElementById("form-error");
             errorBox.hidden = true;
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
 
             const amountCents =
                 amountSelect.value === "custom"
@@ -94,20 +96,27 @@
                 donorEmail: document.getElementById("donorEmail").value,
             };
 
-            const response = await fetch("/api/checkout", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            });
-            const result = await response.json();
+            try {
+                const response = await fetch("/api/checkout", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+                const result = await response.json();
 
-            if (!response.ok) {
-                errorBox.textContent = result.error || "Something went wrong. Please try again.";
+                if (!response.ok) {
+                    errorBox.textContent = result.error || "Something went wrong. Please try again.";
+                    errorBox.hidden = false;
+                    return;
+                }
+
+                window.location.href = result.url;
+            } catch (err) {
+                errorBox.textContent = "Network error. Please check your connection and try again.";
                 errorBox.hidden = false;
-                return;
+            } finally {
+                submitButton.disabled = false;
             }
-
-            window.location.href = result.url;
         });
     </script>
 </body>

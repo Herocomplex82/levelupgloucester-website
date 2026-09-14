@@ -1,6 +1,44 @@
 // functions/api/stripe-webhook.js
 import Stripe from "stripe";
-import { insertRaffleEntry, confirmRegistration, insertDonation } from "../../lib/db.js";
+import { getStripeClient } from "../../lib/stripe.js";
+import {
+  insertRaffleEntry,
+  confirmRegistration,
+  insertDonation,
+  getRegistrationById,
+  releaseSeat,
+  expireRegistration,
+} from "../../lib/db.js";
+
+// A promotion code, when applied, shows up as an expandable reference on the
+// Checkout Session's `discounts` array. The webhook payload itself never
+// carries the expanded PromotionCode object (Stripe does not support
+// `expand` on push events), so getting the human-readable code requires a
+// follow-up API call with `expand: ["discounts.promotion_code"]`. We only
+// make that call when a discount was actually applied (total_details shows a
+// non-zero amount_discount), so the common no-discount path never needs it.
+async function readAppliedPromotionCode(env, session) {
+  const discountAmount = session.total_details?.amount_discount ?? 0;
+  if (discountAmount <= 0) {
+    return null;
+  }
+
+  try {
+    const stripe = getStripeClient(env);
+    const expanded = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: ["discounts.promotion_code"],
+    });
+    const discount = expanded.discounts?.[0];
+    const promotionCode = discount?.promotion_code;
+    if (!promotionCode) return null;
+    return typeof promotionCode === "string" ? promotionCode : promotionCode.code ?? null;
+  } catch (err) {
+    console.error(
+      `stripe-webhook: failed to look up promotion code for session ${session.id}: ${err.message}`
+    );
+    return null;
+  }
+}
 
 export async function onRequestPost({ request, env }) {
   const signature = request.headers.get("Stripe-Signature");
@@ -24,6 +62,23 @@ export async function onRequestPost({ request, env }) {
     return new Response(`Webhook signature verification failed: ${err.message}`, { status: 400 });
   }
 
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object;
+    const metadata = session.metadata ?? {};
+    if (metadata.type === "registration" && metadata.registrationId) {
+      const registrationId = Number(metadata.registrationId);
+      const registration = await getRegistrationById(env.DB, registrationId);
+      // Only act if the registration is still pending — protects against a
+      // redelivered/duplicate expired event releasing a seat twice, or
+      // racing a completed event that already confirmed it.
+      if (registration && registration.status === "pending") {
+        await releaseSeat(env.DB, registration.workshop_day_id);
+        await expireRegistration(env.DB, registrationId);
+      }
+    }
+    return Response.json({ received: true });
+  }
+
   if (event.type !== "checkout.session.completed") {
     return Response.json({ received: true, ignored: event.type });
   }
@@ -44,7 +99,12 @@ export async function onRequestPost({ request, env }) {
       break;
     }
     case "registration": {
-      await confirmRegistration(env.DB, Number(metadata.registrationId), session.id);
+      const promoCodeUsed = await readAppliedPromotionCode(env, session);
+      await confirmRegistration(env.DB, Number(metadata.registrationId), {
+        stripeSessionId: session.id,
+        amountPaidCents: session.amount_total,
+        promoCodeUsed,
+      });
       break;
     }
     case "donation": {

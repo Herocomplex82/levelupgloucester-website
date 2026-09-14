@@ -6,12 +6,38 @@ import {
   insertBasket,
   insertWorkshopDay,
   reserveSeat,
+  releaseSeat,
   getWorkshopDayById,
   insertRaffleEntry,
   insertDonation,
   listRaffleEntries,
   listDonations,
+  insertPendingRegistration,
+  confirmRegistration,
+  expireRegistration,
+  getRegistrationById,
 } from "../../lib/db.js";
+
+function pendingRegistrationFixture(overrides = {}) {
+  return {
+    childName: "Alex Rossi",
+    childDob: "2018-05-01",
+    parentName: "Steve Rossi",
+    address: "1 Main St, Gloucester, MA",
+    phone: "978-555-0100",
+    email: "parent@example.com",
+    emergencyContactName: "Jackie Rossi",
+    emergencyContactPhone: "978-555-0101",
+    allergiesMedical: "",
+    waiverAccepted: true,
+    waiverSignatureName: "Steve Rossi",
+    waiverTimestamp: new Date().toISOString(),
+    photoRelease: true,
+    registrationType: "full",
+    promoCodeUsed: null,
+    ...overrides,
+  };
+}
 
 describe("baskets", () => {
   it("insertBasket then getActiveBaskets returns it", async () => {
@@ -105,5 +131,116 @@ describe("insertDonation idempotency", () => {
     const all = await listDonations(env.DB);
     const matching = all.filter((d) => d.stripe_session_id === "cs_test_dup_donation");
     expect(matching).toHaveLength(1);
+  });
+});
+
+describe("confirmRegistration", () => {
+  it("stores the discounted amount and promo code when a promo code was applied", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "June Workshop",
+      eventDate: "2027-06-01",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 5,
+    });
+    await reserveSeat(env.DB, workshopDayId);
+    const { id } = await insertPendingRegistration(env.DB, pendingRegistrationFixture({ workshopDayId }));
+
+    await confirmRegistration(env.DB, id, {
+      stripeSessionId: "cs_test_promo_1",
+      amountPaidCents: 3900, // sliding-scale discount off the $65 full price
+      promoCodeUsed: "SLIDING20",
+    });
+
+    const registration = await getRegistrationById(env.DB, id);
+    expect(registration.status).toBe("confirmed");
+    expect(registration.amount_paid_cents).toBe(3900);
+    expect(registration.promo_code_used).toBe("SLIDING20");
+  });
+
+  it("stores the full price and a null promo code when no promo code was applied", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "July Workshop",
+      eventDate: "2027-07-01",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 5,
+    });
+    await reserveSeat(env.DB, workshopDayId);
+    const { id } = await insertPendingRegistration(env.DB, pendingRegistrationFixture({ workshopDayId }));
+
+    await confirmRegistration(env.DB, id, {
+      stripeSessionId: "cs_test_no_promo_1",
+      amountPaidCents: 6500,
+      promoCodeUsed: null,
+    });
+
+    const registration = await getRegistrationById(env.DB, id);
+    expect(registration.status).toBe("confirmed");
+    expect(registration.amount_paid_cents).toBe(6500);
+    expect(registration.promo_code_used).toBeNull();
+  });
+});
+
+describe("expireRegistration", () => {
+  it("marks a pending registration as expired", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "August Workshop",
+      eventDate: "2027-08-01",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 5,
+    });
+    await reserveSeat(env.DB, workshopDayId);
+    const { id } = await insertPendingRegistration(env.DB, pendingRegistrationFixture({ workshopDayId }));
+
+    await expireRegistration(env.DB, id);
+
+    const registration = await getRegistrationById(env.DB, id);
+    expect(registration.status).toBe("expired");
+  });
+
+  it("does not touch a registration that is already confirmed", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "September Workshop",
+      eventDate: "2027-09-01",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 5,
+    });
+    await reserveSeat(env.DB, workshopDayId);
+    const { id } = await insertPendingRegistration(env.DB, pendingRegistrationFixture({ workshopDayId }));
+    await confirmRegistration(env.DB, id, { stripeSessionId: "cs_test_already_confirmed", amountPaidCents: 6500 });
+
+    await expireRegistration(env.DB, id);
+
+    const registration = await getRegistrationById(env.DB, id);
+    expect(registration.status).toBe("confirmed");
+  });
+});
+
+describe("releaseSeat used for expired registrations", () => {
+  it("frees a seat that was reserved by an abandoned checkout", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "October Workshop",
+      eventDate: "2027-10-01",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 1,
+    });
+    await reserveSeat(env.DB, workshopDayId);
+
+    const day = await getWorkshopDayById(env.DB, workshopDayId);
+    expect(day.seats_taken).toBe(1);
+
+    await releaseSeat(env.DB, workshopDayId);
+
+    const dayAfter = await getWorkshopDayById(env.DB, workshopDayId);
+    expect(dayAfter.seats_taken).toBe(0);
   });
 });

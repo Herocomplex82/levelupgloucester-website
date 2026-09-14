@@ -2,7 +2,15 @@
 import { describe, expect, it, vi } from "vitest";
 import { env } from "cloudflare:test";
 import Stripe from "stripe";
-import { insertBasket, insertWorkshopDay, insertPendingRegistration, getWorkshopDayById, reserveSeat } from "../../lib/db.js";
+import * as stripeLib from "../../lib/stripe.js";
+import {
+  insertBasket,
+  insertWorkshopDay,
+  insertPendingRegistration,
+  getWorkshopDayById,
+  getRegistrationById,
+  reserveSeat,
+} from "../../lib/db.js";
 import { onRequestPost } from "../../functions/api/stripe-webhook.js";
 
 const WEBHOOK_SECRET = "whsec_test_secret";
@@ -33,6 +41,20 @@ function checkoutCompletedEvent(sessionOverrides) {
         id: "cs_test_1",
         customer_details: { email: "buyer@example.com", name: "Buyer Name" },
         amount_total: 500,
+        metadata: {},
+        ...sessionOverrides,
+      },
+    },
+  };
+}
+
+function checkoutExpiredEvent(sessionOverrides) {
+  return {
+    id: "evt_test_expired_1",
+    type: "checkout.session.expired",
+    data: {
+      object: {
+        id: "cs_test_expired_1",
         metadata: {},
         ...sessionOverrides,
       },
@@ -143,9 +165,78 @@ describe("POST /api/stripe-webhook", () => {
     const registration = await env.DB.prepare("SELECT * FROM registrations WHERE id = ?").bind(registrationId).first();
     expect(registration.status).toBe("confirmed");
     expect(registration.stripe_session_id).toBe("cs_test_reg_1");
+    // Finding 1: the amount actually charged is recorded, and no promo code was applied.
+    expect(registration.amount_paid_cents).toBe(500);
+    expect(registration.promo_code_used).toBeNull();
 
     const day = await getWorkshopDayById(env.DB, workshopDayId);
     expect(day.seats_taken).toBe(1); // reserved at checkout time, not incremented again here
+  });
+
+  it("confirms a registration with an applied promo code, storing both the code and the discounted amount (Finding 1)", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "May Vacation Workshop",
+      eventDate: "2027-05-21",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 10,
+    });
+    await reserveSeat(env.DB, workshopDayId);
+    const { id: registrationId } = await insertPendingRegistration(env.DB, {
+      workshopDayId,
+      childName: "Alex Rossi",
+      childDob: "2018-05-01",
+      parentName: "Steve Rossi",
+      address: "1 Main St, Gloucester, MA",
+      phone: "978-555-0100",
+      email: "parent@example.com",
+      emergencyContactName: "Jackie Rossi",
+      emergencyContactPhone: "978-555-0101",
+      allergiesMedical: "",
+      waiverAccepted: true,
+      waiverSignatureName: "Steve Rossi",
+      waiverTimestamp: new Date().toISOString(),
+      photoRelease: true,
+      registrationType: "full",
+      promoCodeUsed: null,
+    });
+
+    // Simulate the promotion code being applied: the webhook payload shows a
+    // non-zero discount, which triggers a follow-up `sessions.retrieve` call
+    // (expanded) to look up the actual promo code text.
+    const retrieveMock = vi.fn().mockResolvedValue({
+      id: "cs_test_promo_reg_1",
+      discounts: [{ promotion_code: { code: "SLIDING20" } }],
+    });
+    vi.spyOn(stripeLib, "getStripeClient").mockReturnValue({
+      checkout: { sessions: { retrieve: retrieveMock } },
+    });
+
+    const request = await signedWebhookRequest(
+      checkoutCompletedEvent({
+        id: "cs_test_promo_reg_1",
+        amount_total: 3900,
+        total_details: { amount_discount: 2600, amount_tax: 0, amount_shipping: 0 },
+        metadata: { type: "registration", registrationId: String(registrationId), workshopDayId: String(workshopDayId) },
+      })
+    );
+
+    const response = await onRequestPost({
+      request,
+      env: { ...env, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET },
+    });
+
+    expect(response.status).toBe(200);
+    expect(retrieveMock).toHaveBeenCalledWith(
+      "cs_test_promo_reg_1",
+      expect.objectContaining({ expand: expect.arrayContaining(["discounts.promotion_code"]) })
+    );
+
+    const registration = await env.DB.prepare("SELECT * FROM registrations WHERE id = ?").bind(registrationId).first();
+    expect(registration.status).toBe("confirmed");
+    expect(registration.amount_paid_cents).toBe(3900);
+    expect(registration.promo_code_used).toBe("SLIDING20");
   });
 
   it("records a donation", async () => {
@@ -235,5 +326,130 @@ describe("POST /api/stripe-webhook", () => {
     expect(loggedMessage).toContain("mystery-flow");
 
     errorSpy.mockRestore();
+  });
+});
+
+describe("POST /api/stripe-webhook — checkout.session.expired (Finding 4)", () => {
+  it("releases the reserved seat and marks a pending registration as expired", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "November Workshop",
+      eventDate: "2027-11-01",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 1,
+    });
+    await reserveSeat(env.DB, workshopDayId); // simulates /api/checkout reserving the seat at checkout time
+    const { id: registrationId } = await insertPendingRegistration(env.DB, {
+      workshopDayId,
+      childName: "Alex Rossi",
+      childDob: "2018-05-01",
+      parentName: "Steve Rossi",
+      address: "1 Main St, Gloucester, MA",
+      phone: "978-555-0100",
+      email: "parent@example.com",
+      emergencyContactName: "Jackie Rossi",
+      emergencyContactPhone: "978-555-0101",
+      allergiesMedical: "",
+      waiverAccepted: true,
+      waiverSignatureName: "Steve Rossi",
+      waiverTimestamp: new Date().toISOString(),
+      photoRelease: true,
+      registrationType: "full",
+      promoCodeUsed: null,
+    });
+
+    const dayBefore = await getWorkshopDayById(env.DB, workshopDayId);
+    expect(dayBefore.seats_taken).toBe(1);
+
+    const request = await signedWebhookRequest(
+      checkoutExpiredEvent({
+        id: "cs_test_expired_reg_1",
+        metadata: { type: "registration", registrationId: String(registrationId), workshopDayId: String(workshopDayId) },
+      })
+    );
+
+    const response = await onRequestPost({
+      request,
+      env: { ...env, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET },
+    });
+
+    expect(response.status).toBe(200);
+
+    const registration = await getRegistrationById(env.DB, registrationId);
+    expect(registration.status).toBe("expired");
+
+    const dayAfter = await getWorkshopDayById(env.DB, workshopDayId);
+    expect(dayAfter.seats_taken).toBe(0);
+  });
+
+  it("does not release a seat or change status for a registration that already confirmed (idempotent against a race with checkout.session.completed)", async () => {
+    const { id: workshopDayId } = await insertWorkshopDay(env.DB, {
+      title: "December Workshop",
+      eventDate: "2027-12-01",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 1,
+    });
+    await reserveSeat(env.DB, workshopDayId);
+    const { id: registrationId } = await insertPendingRegistration(env.DB, {
+      workshopDayId,
+      childName: "Alex Rossi",
+      childDob: "2018-05-01",
+      parentName: "Steve Rossi",
+      address: "1 Main St, Gloucester, MA",
+      phone: "978-555-0100",
+      email: "parent@example.com",
+      emergencyContactName: "Jackie Rossi",
+      emergencyContactPhone: "978-555-0101",
+      allergiesMedical: "",
+      waiverAccepted: true,
+      waiverSignatureName: "Steve Rossi",
+      waiverTimestamp: new Date().toISOString(),
+      photoRelease: true,
+      registrationType: "full",
+      promoCodeUsed: null,
+    });
+
+    const completedRequest = await signedWebhookRequest(
+      checkoutCompletedEvent({
+        id: "cs_test_race_1",
+        metadata: { type: "registration", registrationId: String(registrationId), workshopDayId: String(workshopDayId) },
+      })
+    );
+    await onRequestPost({ request: completedRequest, env: { ...env, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET } });
+
+    const expiredRequest = await signedWebhookRequest(
+      checkoutExpiredEvent({
+        id: "cs_test_race_1",
+        metadata: { type: "registration", registrationId: String(registrationId), workshopDayId: String(workshopDayId) },
+      })
+    );
+    const response = await onRequestPost({ request: expiredRequest, env: { ...env, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET } });
+
+    expect(response.status).toBe(200);
+
+    const registration = await getRegistrationById(env.DB, registrationId);
+    expect(registration.status).toBe("confirmed"); // must not be flipped back to expired
+
+    const day = await getWorkshopDayById(env.DB, workshopDayId);
+    expect(day.seats_taken).toBe(1); // seat must not be released a second time
+  });
+
+  it("ignores an expired event for a non-registration checkout type", async () => {
+    const request = await signedWebhookRequest(
+      checkoutExpiredEvent({
+        id: "cs_test_expired_raffle_1",
+        metadata: { type: "raffle" },
+      })
+    );
+
+    const response = await onRequestPost({
+      request,
+      env: { ...env, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET },
+    });
+
+    expect(response.status).toBe(200);
   });
 });

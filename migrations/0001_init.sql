@@ -51,7 +51,8 @@ CREATE TABLE registrations (
   photo_release INTEGER NOT NULL,
   registration_type TEXT NOT NULL CHECK (registration_type IN ('full','half')),
   promo_code_used TEXT,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','confirmed')),
+  amount_paid_cents INTEGER,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','confirmed','expired')),
   stripe_session_id TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

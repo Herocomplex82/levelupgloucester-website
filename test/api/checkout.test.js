@@ -58,6 +58,80 @@ describe("POST /api/checkout — raffle", () => {
     expect(call.metadata.basketId).toBe(String(basketId));
   });
 
+  it("charges $6.00 for 7 tickets (one 6-bundle + one single, not a flat $5)", async () => {
+    const { id: basketId } = await insertBasket(env.DB, {
+      name: "Catan Night",
+      description: "Settlers of Catan + expansions",
+      image_path: "images/baskets/catan.jpg",
+    });
+    const stripe = fakeStripe();
+    vi.spyOn(stripeLib, "getStripeClient").mockReturnValue(stripe);
+
+    const response = await onRequestPost({
+      env,
+      request: postJson({
+        type: "raffle",
+        basketId,
+        ticketCount: 7,
+        donorName: "Jamie Walker",
+        donorEmail: "jamie@example.com",
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    const call = stripe.checkout.sessions.create.mock.calls[0][0];
+    expect(call.line_items[0].price_data.unit_amount).toBe(600); // 500 (6-bundle) + 100 (1 single)
+  });
+
+  it("charges $10.00 for 12 tickets (two full 6-bundles)", async () => {
+    const { id: basketId } = await insertBasket(env.DB, {
+      name: "Catan Night",
+      description: "Settlers of Catan + expansions",
+      image_path: "images/baskets/catan.jpg",
+    });
+    const stripe = fakeStripe();
+    vi.spyOn(stripeLib, "getStripeClient").mockReturnValue(stripe);
+
+    const response = await onRequestPost({
+      env,
+      request: postJson({
+        type: "raffle",
+        basketId,
+        ticketCount: 12,
+        donorName: "Jamie Walker",
+        donorEmail: "jamie@example.com",
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    const call = stripe.checkout.sessions.create.mock.calls[0][0];
+    expect(call.line_items[0].price_data.unit_amount).toBe(1000); // 2 * 500
+  });
+
+  it("400s when ticketCount exceeds the server-side maximum", async () => {
+    const { id: basketId } = await insertBasket(env.DB, {
+      name: "Catan Night",
+      description: "Settlers of Catan + expansions",
+      image_path: "images/baskets/catan.jpg",
+    });
+    const stripe = fakeStripe();
+    vi.spyOn(stripeLib, "getStripeClient").mockReturnValue(stripe);
+
+    const response = await onRequestPost({
+      env,
+      request: postJson({
+        type: "raffle",
+        basketId,
+        ticketCount: 1000000,
+        donorName: "Jamie Walker",
+        donorEmail: "jamie@example.com",
+      }),
+    });
+
+    expect(response.status).toBe(400);
+    expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
+  });
+
   it("404s for a basket that doesn't exist", async () => {
     const stripe = fakeStripe();
     vi.spyOn(stripeLib, "getStripeClient").mockReturnValue(stripe);

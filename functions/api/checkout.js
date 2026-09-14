@@ -9,9 +9,16 @@ import {
   insertPendingRegistration,
 } from "../../lib/db.js";
 
+// $1/ticket, with a "6 for $5" bundle discount applied to every full group of 6
+// (e.g. 7 tickets = one bundle of 6 ($5) + 1 single ($1) = $6; 12 tickets = two
+// bundles of 6 = $10). A flat cap on ticketCount (below) prevents this from being
+// used to buy unbounded entries for a trivial amount.
+const MAX_RAFFLE_TICKETS = 100;
+
 function raffleTicketPriceCents(ticketCount) {
-  // $1/ticket for 1-5, flat $5 for 6+ ("6 for $5" bundle)
-  return ticketCount >= 6 ? 500 : ticketCount * 100;
+  const bundles = Math.floor(ticketCount / 6);
+  const remainder = ticketCount % 6;
+  return bundles * 500 + remainder * 100;
 }
 
 async function handleRaffle(body, env, origin) {
@@ -24,6 +31,12 @@ async function handleRaffle(body, env, origin) {
   }
   if (!Number.isInteger(body.ticketCount) || body.ticketCount < 1) {
     return Response.json({ error: "ticketCount must be a positive integer" }, { status: 400 });
+  }
+  if (body.ticketCount > MAX_RAFFLE_TICKETS) {
+    return Response.json(
+      { error: `ticketCount cannot exceed ${MAX_RAFFLE_TICKETS}` },
+      { status: 400 }
+    );
   }
 
   const basket = await getBasketById(env.DB, body.basketId);

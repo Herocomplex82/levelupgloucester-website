@@ -2,10 +2,15 @@
 import { isAuthorized } from "../../../lib/auth.js";
 import { listRaffleEntries, listRegistrations, listDonations } from "../../../lib/db.js";
 
+function sanitizeCsvValue(v) {
+  const str = String(v ?? "");
+  return /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
+}
+
 function toCsv(rows) {
   if (rows.length === 0) return "";
   const headers = Object.keys(rows[0]);
-  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const escape = (v) => `"${sanitizeCsvValue(v).replace(/"/g, '""')}"`;
   const lines = [headers.join(",")];
   for (const row of rows) {
     lines.push(headers.map((h) => escape(row[h])).join(","));

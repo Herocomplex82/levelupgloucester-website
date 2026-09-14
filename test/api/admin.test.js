@@ -83,6 +83,52 @@ describe("GET /api/admin/entries", () => {
     const text = await response.text();
     expect(text.split("\n")[0]).toContain("donor_name");
   });
+
+  it("neutralizes CSV formula-injection payloads in exported values", async () => {
+    await insertDonation(env.DB, {
+      donorName: "=cmd|'/C calc'!A0",
+      donorEmail: "donor@example.com",
+      amountCents: 4000,
+      designation: "sponsor_a_child",
+      stripeSessionId: "cs_admin_test_injection_equals",
+    });
+    await insertDonation(env.DB, {
+      donorName: "+1+1",
+      donorEmail: "donor2@example.com",
+      amountCents: 4000,
+      designation: "sponsor_a_child",
+      stripeSessionId: "cs_admin_test_injection_plus",
+    });
+    await insertDonation(env.DB, {
+      donorName: "Jamie Walker",
+      donorEmail: "donor3@example.com",
+      amountCents: 4000,
+      designation: "sponsor_a_child",
+      stripeSessionId: "cs_admin_test_injection_normal",
+    });
+
+    const response = await entriesHandler({
+      request: authedRequest("https://levelupgloucester.org/api/admin/entries?type=donations&format=csv"),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(200);
+    const text = await response.text();
+    const lines = text.split("\n");
+    const headers = lines[0].split(",");
+    const donorNameIndex = headers.indexOf("donor_name");
+
+    const unquote = (field) => field.replace(/^"|"$/g, "").replace(/""/g, '"');
+    const findDonorName = (sessionId) => {
+      const row = lines.find((line) => line.includes(sessionId));
+      const fields = row.split(",");
+      return unquote(fields[donorNameIndex]);
+    };
+
+    expect(findDonorName("cs_admin_test_injection_equals")).toBe("'=cmd|'/C calc'!A0");
+    expect(findDonorName("cs_admin_test_injection_plus")).toBe("'+1+1");
+    // Normal values must pass through byte-for-byte unchanged (no false positives).
+    expect(findDonorName("cs_admin_test_injection_normal")).toBe("Jamie Walker");
+  });
 });
 
 describe("POST /api/admin/manage", () => {

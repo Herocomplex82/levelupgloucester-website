@@ -9,10 +9,10 @@ function authedRequest(url) {
   return new Request(url, { headers: { Cookie: "levelup_admin=correct-horse" } });
 }
 
-function loginRequest(password) {
+function loginRequest(password, ip = "203.0.113.1") {
   return new Request("https://levelupgloucester.org/api/admin/login", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "CF-Connecting-IP": ip },
     body: JSON.stringify({ password }),
   });
 }
@@ -35,6 +35,61 @@ describe("POST /api/admin/login", () => {
       env: { ...env, ADMIN_TOKEN: "correct-horse" },
     });
     expect(response.status).toBe(401);
+  });
+});
+
+describe("POST /api/admin/login — brute-force lockout", () => {
+  const LOCKOUT_IP = "203.0.113.10";
+  const OTHER_IP = "203.0.113.20";
+
+  it("locks out after 5 failed attempts from the same IP, rejecting even the correct password on the 6th try", async () => {
+    for (let i = 0; i < 5; i++) {
+      const response = await loginHandler({
+        request: loginRequest("wrong", LOCKOUT_IP),
+        env: { ...env, ADMIN_TOKEN: "correct-horse" },
+      });
+      expect(response.status).toBe(401);
+    }
+
+    const response = await loginHandler({
+      request: loginRequest("correct-horse", LOCKOUT_IP),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(429);
+    const body = await response.json();
+    expect(body.error).toBe("Too many attempts, try again later");
+  });
+
+  it("does not lock out a different IP due to another IP's failed attempts", async () => {
+    for (let i = 0; i < 5; i++) {
+      await loginHandler({
+        request: loginRequest("wrong", LOCKOUT_IP),
+        env: { ...env, ADMIN_TOKEN: "correct-horse" },
+      });
+    }
+
+    const response = await loginHandler({
+      request: loginRequest("correct-horse", OTHER_IP),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(200);
+  });
+
+  it("does not count failed attempts older than the 15-minute window", async () => {
+    const staleIp = "203.0.113.30";
+    for (let i = 0; i < 5; i++) {
+      await env.DB.prepare(
+        "INSERT INTO login_attempts (ip_address, attempted_at) VALUES (?, datetime('now', '-30 minutes'))"
+      )
+        .bind(staleIp)
+        .run();
+    }
+
+    const response = await loginHandler({
+      request: loginRequest("correct-horse", staleIp),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(200);
   });
 });
 

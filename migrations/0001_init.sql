@@ -65,3 +65,11 @@ CREATE TABLE donations (
   stripe_session_id TEXT UNIQUE,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE login_attempts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ip_address TEXT NOT NULL,
+  attempted_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX idx_login_attempts_ip_time ON login_attempts(ip_address, attempted_at);

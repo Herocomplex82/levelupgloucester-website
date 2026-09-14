@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for a Workshop Day | Level Up Gloucester</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <a href="index.html" class="logo"><img src="images/logo.png" alt="Level Up Gloucester" style="height:100px;width:auto;display:block;"></a>
+            <nav>
+                <a href="index.html#about">About</a>
+                <a href="register.html">Workshop Days</a>
+                <a href="raffle.html">Raffle</a>
+                <a href="donate.html">Donate</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Register for a Workshop Day</h1>
+                <p class="lead">Full-day and half-day options. If cost is a barrier for your family, email us at <a href="mailto:levelupgloucester@gmail.com">levelupgloucester@gmail.com</a> before registering and we'll work something out quietly.</p>
+            </div>
+        </section>
+
+        <section id="form-error-section" class="bg-light" hidden>
+            <div class="container"><div id="form-error" class="form-error"></div></div>
+        </section>
+
+        <section>
+            <div class="container">
+                <form id="registration-form">
+                    <div class="form-field">
+                        <label for="workshopDayId">Which workshop day?</label>
+                        <select id="workshopDayId" name="workshopDayId" required></select>
+                    </div>
+                    <div class="form-field">
+                        <label for="registrationType">Full day or half day?</label>
+                        <select id="registrationType" name="registrationType" required>
+                            <option value="full">Full day</option>
+                            <option value="half">Half day</option>
+                        </select>
+                    </div>
+
+                    <h3>Participant Information</h3>
+                    <div class="form-field"><label for="childName">Child's full name</label><input type="text" id="childName" required></div>
+                    <div class="form-field"><label for="childDob">Child's date of birth</label><input type="date" id="childDob" required></div>
+                    <div class="form-field"><label for="parentName">Parent/guardian full name</label><input type="text" id="parentName" required></div>
+                    <div class="form-field"><label for="address">Home address</label><input type="text" id="address" required></div>
+                    <div class="form-field"><label for="phone">Phone</label><input type="tel" id="phone" required></div>
+                    <div class="form-field"><label for="email">Email</label><input type="email" id="email" required></div>
+                    <div class="form-field"><label for="emergencyContactName">Emergency contact name</label><input type="text" id="emergencyContactName" required></div>
+                    <div class="form-field"><label for="emergencyContactPhone">Emergency contact phone</label><input type="tel" id="emergencyContactPhone" required></div>
+                    <div class="form-field"><label for="allergiesMedical">Allergies or medical conditions we should know about</label><textarea id="allergiesMedical"></textarea></div>
+
+                    <h3>Assumption of Risk &amp; Release of Liability</h3>
+                    <p>I understand that my child will be participating in tabletop gaming activities (board games, card games, and role playing games such as Dungeons &amp; Dragons) supervised by Level Up Inc. staff and volunteers. While these are low-physical-risk activities, I understand that any group activity carries some inherent risk, including minor injury, illness, or property loss. In consideration of my child being permitted to participate, I assume all ordinary risks; release and hold harmless Level Up Inc., its directors, officers, employees, and volunteers, and the event venue, from any and all claims, liability, or expenses arising from my child's participation, except in cases of gross negligence or willful misconduct; authorize Level Up Inc. staff to seek emergency medical treatment for my child if I cannot be reached immediately, agreeing to be responsible for any resulting medical costs; and confirm the information provided above is accurate.</p>
+                    <div class="form-field checkbox">
+                        <input type="checkbox" id="waiverAccepted" required>
+                        <label for="waiverAccepted">I have read and agree to the above.</label>
+                    </div>
+                    <div class="form-field">
+                        <label for="waiverSignatureName">Type your full name as your signature</label>
+                        <input type="text" id="waiverSignatureName" required>
+                    </div>
+
+                    <h3>Photo &amp; Video Release</h3>
+                    <div class="form-field checkbox">
+                        <input type="checkbox" id="photoRelease">
+                        <label for="photoRelease">I give Level Up Inc. permission to use photos or video of my child taken during this event for the organization's website, social media, and promotional materials. (Optional — leave unchecked to decline.)</label>
+                    </div>
+
+                    <button type="submit" class="btn">Continue to Payment &rarr;</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer id="contact">
+        <div class="container">
+            <p>&copy; Level Up Inc. | levelupgloucester@gmail.com</p>
+        </div>
+    </footer>
+
+    <script>
+        async function loadWorkshopDays() {
+            const response = await fetch("/api/workshop-days");
+            const days = await response.json();
+            const select = document.getElementById("workshopDayId");
+            select.innerHTML = days
+                .map(
+                    (d) =>
+                        `<option value="${d.id}">${d.title} — ${d.event_date} (${d.seatsRemaining} seats left)</option>`
+                )
+                .join("");
+        }
+
+        document.getElementById("registration-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const errorSection = document.getElementById("form-error-section");
+            const errorBox = document.getElementById("form-error");
+            errorSection.hidden = true;
+
+            const body = {
+                type: "registration",
+                workshopDayId: Number(document.getElementById("workshopDayId").value),
+                registrationType: document.getElementById("registrationType").value,
+                childName: document.getElementById("childName").value,
+                childDob: document.getElementById("childDob").value,
+                parentName: document.getElementById("parentName").value,
+                address: document.getElementById("address").value,
+                phone: document.getElementById("phone").value,
+                email: document.getElementById("email").value,
+                emergencyContactName: document.getElementById("emergencyContactName").value,
+                emergencyContactPhone: document.getElementById("emergencyContactPhone").value,
+                allergiesMedical: document.getElementById("allergiesMedical").value,
+                waiverAccepted: document.getElementById("waiverAccepted").checked,
+                waiverSignatureName: document.getElementById("waiverSignatureName").value,
+                photoRelease: document.getElementById("photoRelease").checked,
+            };
+
+            const response = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                errorBox.textContent = result.error || "Something went wrong. Please try again.";
+                errorSection.hidden = false;
+                return;
+            }
+
+            window.location.href = result.url;
+        });
+
+        loadWorkshopDays();
+    </script>
+</body>
+</html>

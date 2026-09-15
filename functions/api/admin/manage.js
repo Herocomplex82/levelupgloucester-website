@@ -1,7 +1,7 @@
 // functions/api/admin/manage.js
 import { isAuthorized } from "../../../lib/auth.js";
 import { requireFields } from "../../../lib/validate.js";
-import { insertBasket, insertWorkshopDay, updateBasketArv } from "../../../lib/db.js";
+import { insertBasket, insertWorkshopDay, updateBasketArv, updateWorkshopDayImage } from "../../../lib/db.js";
 
 export async function onRequestPost({ request, env }) {
   if (!isAuthorized(request, env)) {
@@ -64,5 +64,14 @@ export async function onRequestPost({ request, env }) {
     return Response.json(result);
   }
 
-  return Response.json({ error: "kind must be basket or workshop_day" }, { status: 400 });
+  if (body.kind === "workshop_day_image") {
+    const missing = requireFields(body, ["id", "image_path"]);
+    if (missing.length > 0) {
+      return Response.json({ error: `Missing fields: ${missing.join(", ")}` }, { status: 400 });
+    }
+    await updateWorkshopDayImage(env.DB, body);
+    return Response.json({ ok: true });
+  }
+
+  return Response.json({ error: "kind must be basket, basket_arv, workshop_day, or workshop_day_image" }, { status: 400 });
 }

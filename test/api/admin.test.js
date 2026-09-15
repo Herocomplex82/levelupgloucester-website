@@ -3,7 +3,7 @@ import { env } from "cloudflare:test";
 import { onRequestPost as loginHandler } from "../../functions/api/admin/login.js";
 import { onRequestGet as entriesHandler } from "../../functions/api/admin/entries.js";
 import { onRequestPost as manageHandler } from "../../functions/api/admin/manage.js";
-import { insertDonation, insertBasket } from "../../lib/db.js";
+import { insertDonation, insertBasket, insertWorkshopDay } from "../../lib/db.js";
 
 function authedRequest(url) {
   return new Request(url, { headers: { Cookie: "levelup_admin=correct-horse" } });
@@ -268,6 +268,27 @@ describe("POST /api/admin/manage", () => {
         method: "POST",
         headers: { "Content-Type": "application/json", Cookie: "levelup_admin=correct-horse" },
         body: JSON.stringify({ kind: "basket_arv", id, arv_cents: 8500 }),
+      }),
+      env: { ...env, ADMIN_TOKEN: "correct-horse" },
+    });
+    expect(response.status).toBe(200);
+  });
+
+  it("updates a workshop day's image after creation", async () => {
+    const { id } = await insertWorkshopDay(env.DB, {
+      title: "April Vacation Workshop",
+      eventDate: "2027-04-21",
+      location: "TBD",
+      priceFullCents: 6500,
+      priceHalfCents: 4000,
+      capacity: 20,
+    });
+
+    const response = await manageHandler({
+      request: new Request("https://levelupgloucester.org/api/admin/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "levelup_admin=correct-horse" },
+        body: JSON.stringify({ kind: "workshop_day_image", id, image_path: "images/workshops/april.jpg" }),
       }),
       env: { ...env, ADMIN_TOKEN: "correct-horse" },
     });

@@ -29,11 +29,18 @@
             </div>
         </section>
 
-        <section id="form-error-section" class="bg-light" hidden>
+        <section id="workshop-list-section" class="bg-light">
+            <div class="container">
+                <h2>Upcoming Workshop Days</h2>
+                <div id="workshop-list" class="workshop-list"></div>
+            </div>
+        </section>
+
+        <section id="form-error-section" hidden>
             <div class="container"><div id="form-error" class="form-error"></div></div>
         </section>
 
-        <section>
+        <section id="registration-form-section">
             <div class="container">
                 <form id="registration-form">
                     <div class="form-field">
@@ -98,6 +105,84 @@
             venueSpan.textContent = selectedDay ? selectedDay.location : "the event venue";
         }
 
+        const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const FALLBACK_IMAGE = "images/founder-workshop.jpg";
+
+        function formatEventDate(eventDate) {
+            const [year, month, day] = eventDate.split("-").map(Number);
+            const date = new Date(year, month - 1, day);
+            return {
+                dayName: DAY_NAMES[date.getDay()],
+                formatted: date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+            };
+        }
+
+        function renderWorkshopList(days) {
+            const list = document.getElementById("workshop-list");
+            list.innerHTML = "";
+            if (days.length === 0) {
+                list.textContent = "No workshop days are open for registration yet — check back soon.";
+                return;
+            }
+
+            days.forEach((d) => {
+                const { dayName, formatted } = formatEventDate(d.event_date);
+                const row = document.createElement("div");
+                row.className = "workshop-row";
+
+                const img = document.createElement("img");
+                img.className = "workshop-thumb";
+                img.src = d.image_path || FALLBACK_IMAGE;
+                img.alt = d.title;
+
+                const info = document.createElement("div");
+                info.className = "workshop-info";
+                const heading = document.createElement("h3");
+                heading.textContent = d.title;
+                const meta = document.createElement("p");
+                meta.className = "workshop-meta";
+                meta.textContent = "Ages 6–13 · Full-day & half-day options";
+                info.append(heading, meta);
+
+                const schedule = document.createElement("div");
+                schedule.className = "workshop-schedule";
+                const dayBadge = document.createElement("div");
+                dayBadge.className = "workshop-day-badge";
+                dayBadge.textContent = dayName;
+                const dateLine = document.createElement("div");
+                dateLine.className = "workshop-date";
+                dateLine.textContent = formatted;
+                const locationLine = document.createElement("div");
+                locationLine.className = "workshop-location";
+                locationLine.textContent = d.location;
+                const seatsLine = document.createElement("div");
+                seatsLine.className = "workshop-seats";
+                seatsLine.textContent = d.seatsRemaining > 0 ? `${d.seatsRemaining} spots left` : "Full";
+                schedule.append(dayBadge, dateLine, locationLine, seatsLine);
+
+                const price = document.createElement("div");
+                price.className = "workshop-price";
+                const fullPrice = document.createElement("div");
+                fullPrice.textContent = `$${(d.price_full_cents / 100).toFixed(0)}`;
+                const halfNote = document.createElement("small");
+                halfNote.textContent = `$${(d.price_half_cents / 100).toFixed(0)} half day`;
+                price.append(fullPrice, halfNote);
+
+                const registerBtn = document.createElement("button");
+                registerBtn.type = "button";
+                registerBtn.className = "btn";
+                registerBtn.textContent = d.seatsRemaining > 0 ? "Register" : "Join Waitlist";
+                registerBtn.addEventListener("click", () => {
+                    document.getElementById("workshopDayId").value = d.id;
+                    updateWaiverVenueName();
+                    document.getElementById("registration-form-section").scrollIntoView({ behavior: "smooth" });
+                });
+
+                row.append(img, info, schedule, price, registerBtn);
+                list.appendChild(row);
+            });
+        }
+
         async function loadWorkshopDays() {
             const response = await fetch("/api/workshop-days");
             const days = await response.json();
@@ -111,6 +196,7 @@
                 select.appendChild(new Option(labelText, d.id));
             });
 
+            renderWorkshopList(days);
             updateWaiverVenueName();
         }
 

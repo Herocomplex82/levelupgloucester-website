@@ -36,3 +36,7 @@ wrangler.toml
 vitest.config.js
 .gitignore
 .npmrc
+
+# Local git worktrees — never public.
+.worktrees/
+.wrangler/

@@ -1,3 +1,5 @@
+# NOTE: `wrangler pages deploy` does NOT honor this file (it is a Workers-assets feature).
+# Deploy via `npm run deploy`, which uploads only the clean dist/ built by scripts/build-public.mjs.
 # Cloudflare Pages direct-upload asset exclusions.
 #
 # `wrangler pages deploy` uploads pages_build_output_dir ("." for this project)

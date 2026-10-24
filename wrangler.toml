@@ -1,6 +1,6 @@
 "$schema" = "./node_modules/wrangler/config-schema.json"
 name = "levelup-website"
-pages_build_output_dir = "."
+pages_build_output_dir = "dist"
 compatibility_date = "2026-09-13"
 compatibility_flags = [ "nodejs_compat" ]
 

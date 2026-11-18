@@ -3,12 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holiday Basket Sweepstakes | Level Up Gloucester</title>
-    <meta name="description" content="Enter Level Up Gloucester's holiday board-game basket sweepstakes. No purchase necessary.">
+    <title>Holiday Game Basket Sweepstakes | Level Up Gloucester</title>
+    <meta name="description" content="Enter Level Up Gloucester's Holiday Game Basket Sweepstakes: 14 baskets of board games, card games, puzzles and Pokémon. $1 per entry, bonus entries at $5+. No purchase necessary.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/site.css">
+    <style>
+        .basket-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+        .basket-card .basket-number { color: var(--color-gray); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; }
+        .basket-card h3 { margin-bottom: 0.5rem; }
+        .basket-card .basket-for { font-style: italic; margin-bottom: 1rem; }
+        .basket-card ul { margin: 0 0 1rem 1.2rem; padding: 0; }
+        .basket-card li { margin-bottom: 0.25rem; }
+        .basket-card .tag-new { color: var(--color-blue); font-weight: 700; font-size: 0.8rem; }
+        .basket-card .basket-meta { font-size: 0.9rem; color: var(--color-gray); margin-bottom: 0.5rem; }
+        .basket-card .basket-value { font-weight: 900; }
+        .basket-card.featured { outline: 3px solid var(--color-blue); }
+        .bonus-table { border-collapse: collapse; margin: 1.5rem 0; width: 100%; max-width: 520px; }
+        .bonus-table th, .bonus-table td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(140, 140, 140, 0.3); }
+        .zeffy-frame { width: 100%; min-height: 900px; border: 0; }
+    </style>
 </head>
 <body>
     <header>
@@ -17,7 +32,7 @@
             <nav>
                 <a href="index.html#about">About</a>
                 <a href="register.html">Workshop Days</a>
-                <a href="raffle.html">Raffle</a>
+                <a href="raffle.html">Sweepstakes</a>
                 <a href="donate.html">Donate</a>
                 <a href="index.html#contact">Contact</a>
             </nav>
@@ -27,42 +42,38 @@
     <main>
         <section class="hero">
             <div class="container">
-                <h1>Holiday Basket Sweepstakes</h1>
-                <p class="lead">Choose a basket, then enter for your chance to win. Entries are $1 each, or 6 for $5. <strong>No purchase is necessary to enter or win</strong> — see "Enter Free" below.</p>
-                <p class="lead"><strong>Drawing: Sunday, December 20, 2026, at 9:00 PM.</strong></p>
+                <h1>Holiday Game Basket Sweepstakes</h1>
+                <p class="lead">14 baskets of board games, card games, puzzles, yard games and Pokémon. Pick the baskets you want, <strong>$1 per entry</strong>, with bonus entries added automatically when you spend $5 or more. Every dollar supports free and low-cost game workshops for Cape Ann kids.</p>
+                <p class="lead"><strong>Drawing: Sunday, December 20, 2026, at 9:00 PM ET.</strong> Winners picked up before Christmas. <strong>No purchase is necessary to enter or win.</strong> See "Enter Free by Mail" below.</p>
+                <p><a href="#enter" class="btn">Enter Now &rarr;</a></p>
             </div>
         </section>
 
         <section id="baskets" class="bg-light">
             <div class="container">
-                <h2>This Year's Baskets</h2>
-                <div id="basket-grid" class="programs-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:2rem;"></div>
+                <h2>The Baskets</h2>
+                <p>Our baskets mix brand-new and gently played games. Every played game has been checked to make sure all its pieces are there. Items marked <span class="tag-new">NEW</span> are new.</p>
+                <div id="basket-grid" class="basket-grid"></div>
             </div>
         </section>
 
         <section id="enter">
             <div class="container">
                 <h2>Enter to Win</h2>
-                <div id="form-error" class="form-error" hidden></div>
-                <form id="entry-form">
-                    <div class="form-field">
-                        <label for="basketId">Which basket?</label>
-                        <select id="basketId" name="basketId" required></select>
-                    </div>
-                    <div class="form-field">
-                        <label for="ticketCount">How many entries? ($1 each, 6 for $5)</label>
-                        <input type="number" id="ticketCount" name="ticketCount" min="1" value="1" required>
-                    </div>
-                    <div class="form-field">
-                        <label for="donorName">Your name</label>
-                        <input type="text" id="donorName" name="donorName" required>
-                    </div>
-                    <div class="form-field">
-                        <label for="donorEmail">Your email</label>
-                        <input type="email" id="donorEmail" name="donorEmail" required>
-                    </div>
-                    <button type="submit" class="btn">Continue to Payment &rarr;</button>
-                </form>
+                <p>Choose how many entries you want for each basket. Every $1 = 1 entry. When entries close, we add bonus entries based on your total:</p>
+                <table class="bonus-table">
+                    <thead><tr><th>Your total</th><th>Bonus</th><th>Example</th></tr></thead>
+                    <tbody>
+                        <tr><td>$1–$4</td><td>&mdash;</td><td>$3 = 3 entries</td></tr>
+                        <tr><td>$5–$19</td><td>+20%</td><td>$5 = 6 entries</td></tr>
+                        <tr><td>$20–$49</td><td>+25%</td><td>$20 = 25 entries</td></tr>
+                        <tr><td>$50+</td><td>+50%</td><td>$50 = 75 entries</td></tr>
+                    </tbody>
+                </table>
+                <p>Bonus entries are spread across the baskets you chose, in proportion to the entries you bought for each. Entries are made through Zeffy, our donation platform, which charges us no fees. Zeffy may ask you for an optional tip to support its free platform. The tip is entirely optional, goes to Zeffy rather than Level Up, and has no effect on your entries.</p>
+                <div id="zeffy-container">
+                    <p><strong>Entries open soon. Check back shortly!</strong></p>
+                </div>
             </div>
         </section>
 
@@ -71,22 +82,23 @@
                 <h2>Enter Free by Mail</h2>
                 <p>No purchase is necessary to enter or win. To enter without donating, mail a 3&times;5 card with your full name, mailing address, email, phone number, and the name of the basket you'd like to enter to:</p>
                 <p><strong>Level Up Inc.</strong><br>Attn: Holiday Sweepstakes<br>53 Wheeler St<br>Gloucester, MA 01930</p>
-                <p>Limit one free mail-in entry per person/household per basket. Mailed entries must be received before the drawing date and receive the average number of entries earned by paid entrants for that basket, rounded up.</p>
+                <p>Each card counts as 1 entry for the basket named on it. You may send one card per basket (limit one free entry per person per basket). Cards must be <strong>received by Saturday, December 19, 2026</strong>.</p>
             </div>
         </section>
 
         <section id="official-rules">
             <div class="container">
                 <h2>Official Rules</h2>
-                <p><strong>NO PURCHASE, DONATION, OR PAYMENT OF ANY KIND IS NECESSARY TO ENTER OR WIN. A donation will not increase your odds of winning relative to other paid entries, beyond the number of entries purchased.</strong></p>
-                <p><strong>Sponsor:</strong> Level Up Inc., a Massachusetts nonprofit corporation, Gloucester, MA.</p>
-                <p><strong>Eligibility:</strong> Open to legal residents of Massachusetts 18 years of age or older. Void where prohibited.</p>
-                <p><strong>How to Enter:</strong> Purchase one or more $1 entries (or a 6-for-$5 bundle) at levelupgloucester.org/raffle.html, choosing the basket you wish to enter, OR enter free by mail as described above. Limit one free entry per person/household per basket.</p>
+                <p><strong>NO PURCHASE, DONATION, OR PAYMENT OF ANY KIND IS NECESSARY TO ENTER OR WIN. A donation does not improve your chances of winning beyond the number of entries it provides under these rules.</strong></p>
+                <p><strong>Sponsor:</strong> Level Up Inc. (Level Up Gloucester), a Massachusetts nonprofit corporation and 501(c)(3) public charity, 53 Wheeler St, Gloucester, MA 01930.</p>
+                <p><strong>Eligibility:</strong> Open to legal residents of Massachusetts 18 years of age or older. Parents or guardians may enter on behalf of a child, and the prize will be awarded to the adult entrant. Level Up Inc. board members and their households are not eligible. Void where prohibited.</p>
+                <p><strong>Entry Period:</strong> Begins when this page is published and ends Sunday, December 20, 2026, at 6:00 PM ET for online entries. Mail-in entries must be received by Saturday, December 19, 2026.</p>
+                <p><strong>How to Enter:</strong> (1) Online: donate $1 per entry using the entry form on this page and choose the basket(s) to enter. Bonus entries are added after the Entry Period closes, based on each entrant's total online entries: 20% extra for 5&ndash;19 entries, 25% extra for 20&ndash;49 entries, and 50% extra for 50 or more entries, rounded down to whole entries and divided among that entrant's chosen baskets in proportion to the entries bought for each. (2) Mail-in: as described under "Enter Free by Mail." Each mail-in card is worth 1 entry for the basket named, limit one free entry per person per basket. Online entries from the same email address are combined.</p>
+                <p><strong>Prizes:</strong> Fourteen (14) prize baskets, described on this page with their approximate retail values (ARV). ARVs are based on typical current prices for items of the same condition. Baskets include both new and used items, as marked. Used items have been checked for completeness. Pokémon tins are repacks filled by hand with donated cards and are not factory-sealed. Total ARV of all prizes is approximately $1,355. Level Up Inc. may substitute an item of equal or greater value. Prizes are awarded as-is with no warranty and cannot be exchanged for cash.</p>
                 <p><strong>Odds of Winning:</strong> Depend on the total number of eligible entries received for each basket.</p>
-                <p><strong>Winner Selection:</strong> One winner per basket will be drawn at random from all eligible entries for that basket on <strong>Sunday, December 20, 2026, at 9:00 PM ET</strong>. Winners will be notified by the email or phone number provided at entry by Monday, December 21, 2026, and must respond by 9:00 PM on Tuesday, December 22, 2026 to claim their prize or it will be forfeited and re-drawn. Winners are responsible for arranging pickup or delivery of their basket before December 24, 2026.</p>
-                <p><strong>Prizes:</strong> Each basket is described on this page along with its approximate retail value. Level Up Inc. reserves the right to substitute a prize of equal or greater value. Prizes are provided as-is with no warranty.</p>
-                <p><strong>Governing Law:</strong> This sweepstakes is governed by the laws of the Commonwealth of Massachusetts.</p>
-                <!-- Drawing date is final. Still pending: each basket's approximate retail value, set per-basket via admin.html once each basket is assembled. -->
+                <p><strong>Winner Selection:</strong> One winner per basket will be drawn at random, weighted by entries, from all eligible entries for that basket on <strong>Sunday, December 20, 2026, at 9:00 PM ET</strong>. A person may win more than one basket. Winners will be notified by the email or phone number provided at entry by Monday, December 21, 2026, and must respond by 9:00 PM on Tuesday, December 22, 2026, or the prize will be forfeited and awarded to an alternate drawn at the same time. Winners must arrange pickup in Gloucester (or local delivery, at Level Up's discretion) before December 24, 2026.</p>
+                <p><strong>Publicity:</strong> Winners' first names and town may be announced on Level Up Gloucester's website and social media unless the winner asks us not to.</p>
+                <p><strong>Governing Law:</strong> This sweepstakes is governed by the laws of the Commonwealth of Massachusetts. Questions: levelupgloucester@gmail.com.</p>
             </div>
         </section>
     </main>
@@ -98,86 +110,102 @@
     </footer>
 
     <script>
-        async function loadBaskets() {
-            const response = await fetch("/api/baskets");
-            const baskets = await response.json();
+        // Paste the Zeffy form's embed URL here once the form is created
+        // (Zeffy > your form > Share > Embed). Until then the page shows "Entries open soon".
+        const ZEFFY_EMBED_URL = "";
 
+        // Items ending in "*" are new; the rest are gently played and piece-checked.
+        const BASKETS = [
+            { name: "Strategy Showcase", forWhom: "Teens & adults who love a great game night", value: 175, featured: true,
+              items: ["PARKS", "Canvas", "7 Wonders Duel", "Steam Park", "Qwirkle"] },
+            { name: "Get Up & Move", forWhom: "Active families, backyards and basements", value: 120,
+              items: ["Laser X two-player laser tag set (batteries included)", "Kubb (Viking lawn game)", "Twister", "Pie Face Showdown", "Happy Salmon*"] },
+            { name: "Epic Campaigns", forWhom: "Teens & adults who like big games for big afternoons", value: 125,
+              items: ["Risk 2210 A.D.", "Risk Godstorm", "Zpocalypse"] },
+            { name: "Pocket Party", forWhom: "Teens & adults, plus great stocking stuffers", value: 125,
+              items: ["Exploding Kittens", "Spyfall", "Dread Curse", "Poetry for Neanderthals*", "Whatchamadrawit", "Stick Up*", "The Big Bang Theory Fact or Fiction", "Pop Culture Jeopardy*", "Wheel of Fortune Card Game*", "Scrabble Slam", "Pictionary Card Game"] },
+            { name: "Wooden Classics", forWhom: "Anyone who loves the classics, in gift-worthy editions", value: 120,
+              items: ["Clue (wooden bookshelf edition)", "Stratego (wooden bookshelf edition)", "Wood Four in a Row*", "Upwords", "Yahtzee", "Scott & Lawson poker set"] },
+            { name: "Family Game Night", forWhom: "The whole household, ages 7+", value: 115,
+              items: ["Fireball Island: Race to Adventure", "Fancy Pachisi", "Would You Rather? board game", "What Do You Meme? Family Edition*", "Apples to Apples Junior", "Monopoly Deal: KPop Demon Hunters", "Yahtzee", "Bunco"] },
+            { name: "Brain Busters & Stocking Stuffers", forWhom: "Puzzle lovers, ages 7+", value: 100,
+              items: ["Tenzi Party Pack + 77 Ways to Play Tenzi", "Kanoodle*", "Qwixx", "ThinkFun Math Dice", "Cranium Zigity", "Janken Deck*", "Would You Rather? tin*", "Jacks"] },
+            { name: "Team Up: Co-op Night", forWhom: "Everyone wins or loses together, just like our workshops", value: 95,
+              items: ["Pandemic", "Harry Potter: Hogwarts Battle", "Chronicles of Crime"] },
+            { name: "Heroes & Fandoms", forWhom: "Superhero, anime and video game fans", value: 85,
+              items: ["DC Comics Deck-Building Game", "Marvel Avengers 1000-piece puzzle*", "Marvel Spider-Man 1000-piece puzzle*", "UNO Dragon Ball Z*", "UNO Super Mario", "LEGO Legends of Chima game"] },
+            { name: "Little Gamers", forWhom: "Ages 4–7", value: 80,
+              items: ["Candy Land magnetic travel tin*", "Hungry Hungry Hippos Grab & Go*", "Pictureka! Flipper*", "Monopoly Junior", "Guess Who?", "Hedbanz", "Twist & Turn"] },
+            { name: "The UNO-verse", forWhom: "UNO fans of every age", value: 65,
+              items: ["UNO Teams*", "UNO Show 'Em No Mercy*", "Phase 10 Go*", "UNO Dice Game", "DOS", "UNO travel case edition", "Phase 10", "Skip-Bo"] },
+            { name: "Pokémon Trainer A", forWhom: "Pokémon fans", value: 40,
+              items: ["XL Pokémon card repack tin", "Medium Pokémon card repack tin", "Pokémon 500-piece puzzle*", "Pokémon poster"] },
+            { name: "Pokémon Trainer B", forWhom: "Pokémon fans", value: 40,
+              items: ["Large Pokémon card repack tin", "Small Pokémon card repack tins", "Pokémon Kanto Region 500-piece puzzle*", "Pokémon poster"] },
+            { name: "Workshop-in-a-Box", forWhom: "Bring a Level Up workshop home, ages 6+", value: 70, featured: true,
+              items: ["Forbidden Island", "Sorry!", "Battleship Grab & Go*", "UNO*", "Connect 4", "Level Up parental guides for every game: how we teach them in our workshops"] },
+        ];
+
+        function renderBaskets() {
             const grid = document.getElementById("basket-grid");
-            grid.innerHTML = "";
-            baskets.forEach((b) => {
-                const card = document.createElement("div");
-                card.className = "program-card";
+            BASKETS.forEach((b, index) => {
+                const card = document.createElement("article");
+                card.className = "program-card basket-card" + (b.featured ? " featured" : "");
 
-                const img = document.createElement("img");
-                img.src = b.image_path;
-                img.alt = b.name;
-                img.style.marginBottom = "1.5rem";
+                const number = document.createElement("div");
+                number.className = "basket-number";
+                number.textContent = `Basket ${index + 1}`;
 
                 const heading = document.createElement("h3");
                 heading.textContent = b.name;
 
-                const description = document.createElement("p");
-                description.textContent = b.description;
+                const forWhom = document.createElement("p");
+                forWhom.className = "basket-for";
+                forWhom.textContent = b.forWhom;
 
-                card.append(img, heading, description);
+                const list = document.createElement("ul");
+                let newCount = 0;
+                b.items.forEach((item) => {
+                    const li = document.createElement("li");
+                    const isNew = item.endsWith("*");
+                    li.textContent = isNew ? item.slice(0, -1) + " " : item;
+                    if (isNew) {
+                        newCount++;
+                        const tag = document.createElement("span");
+                        tag.className = "tag-new";
+                        tag.textContent = "NEW";
+                        li.append(tag);
+                    }
+                    list.append(li);
+                });
 
-                if (b.arv_cents != null) {
-                    const arv = document.createElement("p");
-                    const arvStrong = document.createElement("strong");
-                    arvStrong.textContent = `Approximate retail value: $${(b.arv_cents / 100).toFixed(2)}`;
-                    arv.append(arvStrong);
-                    card.append(arv);
-                }
+                const meta = document.createElement("p");
+                meta.className = "basket-meta";
+                const played = b.items.length - newCount;
+                meta.textContent = [newCount && `${newCount} new`, played && `${played} gently played`].filter(Boolean).join(" · ");
 
-                grid.appendChild(card);
-            });
+                const value = document.createElement("p");
+                value.className = "basket-value";
+                value.textContent = `Approximate retail value: $${b.value}`;
 
-            const select = document.getElementById("basketId");
-            select.innerHTML = "";
-            baskets.forEach((b) => {
-                select.appendChild(new Option(b.name, b.id));
+                card.append(number, heading, forWhom, list, meta, value);
+                grid.append(card);
             });
         }
 
-        document.getElementById("entry-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const errorBox = document.getElementById("form-error");
-            errorBox.hidden = true;
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
+        function renderZeffy() {
+            if (!ZEFFY_EMBED_URL) return;
+            const container = document.getElementById("zeffy-container");
+            const frame = document.createElement("iframe");
+            frame.className = "zeffy-frame";
+            frame.title = "Holiday Game Basket Sweepstakes entry form";
+            frame.src = ZEFFY_EMBED_URL;
+            frame.allow = "payment";
+            container.replaceChildren(frame);
+        }
 
-            const body = {
-                type: "raffle",
-                basketId: Number(document.getElementById("basketId").value),
-                ticketCount: Number(document.getElementById("ticketCount").value),
-                donorName: document.getElementById("donorName").value,
-                donorEmail: document.getElementById("donorEmail").value,
-            };
-
-            try {
-                const response = await fetch("/api/checkout", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
-                });
-                const result = await response.json();
-
-                if (!response.ok) {
-                    errorBox.textContent = result.error || "Something went wrong. Please try again.";
-                    errorBox.hidden = false;
-                    return;
-                }
-
-                window.location.href = result.url;
-            } catch (err) {
-                errorBox.textContent = "Network error. Please check your connection and try again.";
-                errorBox.hidden = false;
-            } finally {
-                submitButton.disabled = false;
-            }
-        });
-
-        loadBaskets();
+        renderBaskets();
+        renderZeffy();
     </script>
 </body>
 </html>

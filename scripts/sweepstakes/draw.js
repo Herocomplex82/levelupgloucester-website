@@ -7,7 +7,8 @@
 //   --sales    Zeffy sales/ticket export (CSV). Column headers are auto-detected;
 //              override with --email-col, --item-col, --qty-col, --name-col,
 //              --first-col, --last-col if Zeffy's headers differ.
-//   --mailin   Optional CSV of free mail-in entries with columns: Name, Email, Basket
+//   --mailin   Optional CSV of free entries (mail-in + Zeffy free online form) with columns:
+//              Name, Email, Basket. Leave Basket blank to assign one at random.
 //   --out      Output folder (default: sweepstakes-results)
 //   --dry-run  Build and report entry totals without drawing winners.
 //
@@ -67,11 +68,15 @@ function loadMailIns(file) {
   if (!file) return { mailIns: [], problems: [] };
   const problems = [];
   const mailIns = parseCsv(readFileSync(file, "utf8")).flatMap((row, i) => {
-    const basketId = matchBasket(row.Basket ?? "", BASKETS);
+    // Free online (Zeffy) entries don't name a basket; per the Official Rules a
+    // blank Basket is assigned to a basket chosen at random.
+    const blank = !(row.Basket ?? "").trim();
+    const basketId = blank ? BASKETS[randomInt(BASKETS.length)].id : matchBasket(row.Basket, BASKETS);
     if (!basketId || !row.Name) {
-      problems.push(`Mail-in row ${i + 2}: needs Name and a known Basket (got "${row.Basket}")`);
+      problems.push(`Free-entry row ${i + 2}: needs Name and a known Basket (got "${row.Basket}")`);
       return [];
     }
+    if (blank) console.log(`Free entry for ${row.Name} assigned at random to ${basketId}`);
     return [{ name: row.Name, email: row.Email ?? "", basketId }];
   });
   return { mailIns, problems };

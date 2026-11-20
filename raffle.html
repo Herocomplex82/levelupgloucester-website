@@ -12,6 +12,7 @@
     <style>
         .basket-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
         .basket-card .basket-number { color: var(--color-gray); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; }
+        .basket-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: 1.25rem; display: block; }
         .basket-card h3 { margin-bottom: 0.5rem; }
         .basket-card .basket-for { font-style: italic; margin-bottom: 1rem; }
         .basket-card ul { margin: 0 0 1rem 1.2rem; padding: 0; }
@@ -116,32 +117,32 @@
 
         // Items ending in "*" are new; the rest are gently played and piece-checked.
         const BASKETS = [
-            { name: "Strategy Showcase", forWhom: "Teens & adults who love a great game night", value: 175, featured: true,
+            { name: "Strategy Showcase", image: "images/sweepstakes/strategy-showcase.jpg", forWhom: "Teens & adults who love a great game night", value: 175, featured: true,
               items: ["PARKS", "Canvas", "7 Wonders Duel", "Steam Park", "Qwirkle"] },
-            { name: "Get Up & Move", forWhom: "Active families, backyards and basements", value: 120,
+            { name: "Get Up & Move", image: "images/sweepstakes/get-up-and-move.jpg", forWhom: "Active families, backyards and basements", value: 120,
               items: ["Laser X two-player laser tag set (batteries included)", "Kubb (Viking lawn game)", "Twister", "Pie Face Showdown", "Happy Salmon*"] },
-            { name: "Epic Campaigns", forWhom: "Two out-of-print Avalon Hill Risk variants plus a zombie survival game, for teens & adults", value: 125,
+            { name: "Epic Campaigns", image: "images/sweepstakes/epic-campaigns.jpg", forWhom: "Two out-of-print Avalon Hill Risk variants plus a zombie survival game, for teens & adults", value: 125,
               items: ["Risk 2210 A.D.", "Risk Godstorm", "Zpocalypse"] },
-            { name: "Pocket Party", forWhom: "Teens & adults, plus great stocking stuffers", value: 125,
+            { name: "Pocket Party", image: "images/sweepstakes/pocket-party.jpg", forWhom: "Teens & adults, plus great stocking stuffers", value: 125,
               items: ["Exploding Kittens", "Spyfall", "Dread Curse", "Poetry for Neanderthals*", "Whatchamadrawit", "Stick Up*", "The Big Bang Theory Fact or Fiction", "Pop Culture Jeopardy*", "Wheel of Fortune Card Game*", "Scrabble Slam", "Pictionary Card Game"] },
-            { name: "Wooden Classics", forWhom: "Anyone who loves the classics, in gift-worthy editions", value: 120,
+            { name: "Wooden Classics", image: "images/sweepstakes/wooden-classics.jpg", forWhom: "Anyone who loves the classics, in gift-worthy editions", value: 120,
               items: ["Clue (wooden bookshelf edition)", "Stratego (wooden bookshelf edition)", "Wood Four in a Row*", "Upwords", "Yahtzee", "Scott & Lawson poker set"] },
-            { name: "Family Game Night", forWhom: "The whole household, ages 7+", value: 115,
+            { name: "Family Game Night", image: "images/sweepstakes/family-game-night.jpg", forWhom: "The whole household, ages 7+", value: 115,
               items: ["Fireball Island: Race to Adventure", "Fancy Pachisi", "Would You Rather? board game", "What Do You Meme? Family Edition*", "Apples to Apples Junior", "Monopoly Deal: KPop Demon Hunters", "Yahtzee", "Bunco"] },
-            { name: "Brain Busters & Stocking Stuffers", forWhom: "Puzzle lovers, ages 7+", value: 100,
+            { name: "Brain Busters & Stocking Stuffers", image: "images/sweepstakes/brain-busters.jpg", forWhom: "Puzzle lovers, ages 7+", value: 100,
               items: ["Tenzi Party Pack + 77 Ways to Play Tenzi", "Kanoodle*", "Qwixx", "ThinkFun Math Dice", "Cranium Zigity", "Janken Deck*", "Would You Rather? tin*", "Jacks"] },
-            { name: "Team Up: Co-op Night", forWhom: "Everyone wins or loses together, just like our workshops", value: 95,
+            { name: "Team Up: Co-op Night", image: "images/sweepstakes/co-op-night.jpg", forWhom: "Everyone wins or loses together, just like our workshops", value: 95,
               items: ["Pandemic", "Harry Potter: Hogwarts Battle", "Chronicles of Crime"] },
-            { name: "Heroes & Fandoms", forWhom: "Superhero, anime and video game fans", value: 85,
+            { name: "Heroes & Fandoms", image: "images/sweepstakes/heroes-fandoms.jpg", forWhom: "Superhero, anime and video game fans", value: 85,
               items: ["DC Comics Deck-Building Game", "Marvel Avengers 1000-piece puzzle*", "Marvel Spider-Man 1000-piece puzzle*", "UNO Dragon Ball Z*", "UNO Super Mario", "LEGO Legends of Chima game"] },
-            { name: "Little Gamers", forWhom: "Ages 4–7", value: 80,
+            { name: "Little Gamers", image: "images/sweepstakes/little-gamers.jpg", forWhom: "Ages 4–7", value: 80,
               items: ["Candy Land magnetic travel tin*", "Hungry Hungry Hippos Grab & Go*", "Pictureka! Flipper*", "Monopoly Junior", "Guess Who?", "Hedbanz", "Twist & Turn"] },
-            { name: "The UNO-verse", forWhom: "UNO fans of every age", value: 65,
+            { name: "The UNO-verse", image: "images/sweepstakes/uno-verse.jpg", forWhom: "UNO fans of every age", value: 65,
               items: ["UNO Teams*", "UNO Show 'Em No Mercy*", "Phase 10 Go*", "UNO Dice Game", "DOS", "UNO travel case edition", "Phase 10", "Skip-Bo"] },
-            { name: "Pokémon Trainer A", forWhom: "Pokémon fans", value: 40,
-              items: ["XL Pokémon card repack tin", "Medium Pokémon card repack tin", "Pokémon 500-piece puzzle*", "Pokémon poster"] },
-            { name: "Pokémon Trainer B", forWhom: "Pokémon fans", value: 40,
-              items: ["Large Pokémon card repack tin", "Small Pokémon card repack tins", "Pokémon Kanto Region 500-piece puzzle*", "Pokémon poster"] },
+            { name: "Pokémon Trainer A", image: "images/sweepstakes/pokemon-a.jpg", forWhom: "Pokémon fans", value: 40,
+              items: ["Pokémon card repack tin (Rampardos)", "2 Pokémon mini tins, repacked", "Poké Ball zip-up card binder*", "Zekrom card binder", "2 Pokémon TCG folders"] },
+            { name: "Pokémon Trainer B", image: "images/sweepstakes/pokemon-b.jpg", forWhom: "Pokémon fans", value: 40,
+              items: ["Pokémon card repack tin (Tyranitar)", "2 Pokémon mini tins, repacked", "Charizard card binder*", "2 Pokémon TCG folders"] },
             { name: "Workshop-in-a-Box", forWhom: "Bring a Level Up workshop home, ages 6+", value: 70, featured: true,
               items: ["Forbidden Island", "Sorry!", "Battleship Grab & Go*", "UNO*", "Connect 4", "Level Up parental guides for every game: how we teach them in our workshops"] },
         ];
@@ -188,6 +189,15 @@
                 value.className = "basket-value";
                 value.textContent = `Approximate retail value: $${b.value}`;
 
+                if (b.image) {
+                    const img = document.createElement("img");
+                    img.src = b.image;
+                    img.alt = `${b.name} basket contents`;
+                    img.loading = "lazy";
+                    img.width = 1600;
+                    img.height = 1200;
+                    card.append(img);
+                }
                 card.append(number, heading, forWhom, list, meta, value);
                 grid.append(card);
             });
